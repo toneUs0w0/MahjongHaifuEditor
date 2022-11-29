@@ -9,7 +9,7 @@ public class SystemManager : MonoBehaviour
     public Sprite tmpHaiSprite;
 
     public List<int> tehaiIdList;      // 手牌のidリスト privateの方がいいかも
-    private List<string> index2id = new List<string>() {"none", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9"};
+    private List<string> index2id = new List<string>() {"none", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m5r", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p5r" };
     public List<HaiEntity> haiEnts = new List<HaiEntity>(); // private
 
     // Start is called before the first frame update
@@ -48,7 +48,7 @@ public class SystemManager : MonoBehaviour
     {
         for(int i = 0; i < 14; i++)
         {
-            int randId = Random.Range(1, 10);
+            int randId = Random.Range(1, 20);
             tehaiIdList[i] = randId;
         }
         tehaiIdList.Sort();

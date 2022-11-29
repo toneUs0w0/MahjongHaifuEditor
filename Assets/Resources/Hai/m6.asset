@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26e87f9d32078415eb2274f77434a560, type: 3}
   m_Name: m6
   m_EditorClassIdentifier: 
-  haiId: 6
+  haiId: 7
   haiSprite: {fileID: 21300000, guid: b58c8a909fd31449aa6bbc63daa0dda3, type: 3}
