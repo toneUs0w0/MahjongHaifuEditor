@@ -24,7 +24,13 @@ public class TaikyokuManager : MonoBehaviour
     public GameObject turnLogPrefab;
     public Color[] logColors;
 
-    private List<string> index2id = new List<string>() {"none", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m5r", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p5r" };
+    public GameObject kawaHaiPrefab;
+    public GameObject panelKawa1;
+    public GameObject panelKawa2;
+    public GameObject panelKawa3;
+    public List<GameObject> panelKawas;
+
+    private List<string> index2id = new List<string>() {"none", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m5r", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p5r", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s5r", "j1", "j2", "j3", "j4", "j5", "j6", "j7"};
     public List<HaiEntity> haiEnts = new List<HaiEntity>(); // private
 
     // Start is called before the first frame update
@@ -32,6 +38,10 @@ public class TaikyokuManager : MonoBehaviour
     {
         InitHaifuData();
         InitHaiEntity();
+        panelKawas = new List<GameObject>();
+        panelKawas.Add(panelKawa1);
+        panelKawas.Add(panelKawa2);
+        panelKawas.Add(panelKawa3);
 
         isTumoEditing = true;
         turnPlayerId = 0;
@@ -45,10 +55,7 @@ public class TaikyokuManager : MonoBehaviour
     public void InitHaifuData()
     {
         haifuData = haifuObj.GetComponent<HaifuData>();
-        haifuData.playerNames.Add("一郎");
-        haifuData.playerNames.Add("次郎");
-        haifuData.playerNames.Add("三郎");
-        haifuData.playerNames.Add("四郎");
+
     }
 
     private void InitHaiEntity()
@@ -97,6 +104,8 @@ public class TaikyokuManager : MonoBehaviour
         haifuData.haifus.Add(turn);
         //print(turn.playerId.ToString() + turn.tumoHaiId.ToString() + turn.dahaiId.ToString());
         print(haifuData.HaifuLogStr());
+        haifuData.kawa[PlayerId].Add(DahaiId);
+
         return turn;
     }
 
@@ -125,7 +134,7 @@ public class TaikyokuManager : MonoBehaviour
             settedDahaiId = HaiId;
         }
 
-        PushNextbutton();
+        PushNextbutton(); //牌譜登録処理全て
     }
 
     public void SwitchEditingMode()
@@ -148,9 +157,58 @@ public class TaikyokuManager : MonoBehaviour
             FrameSetting();
             Turn turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Nomal");
             CreateTurnLog(turn);
-            turnPlayerId = (turnPlayerId + 1) % 4;
-            SetPlayerName();
-            ResetInput();
+            PrepareNextHaifuInput();
+   
+        }
+    }
+
+    //次の牌譜入力の準備
+    private void PrepareNextHaifuInput()
+    {
+        turnPlayerId = (turnPlayerId + 1) % 4;   // プレイヤーの更新
+        SetPlayerName();    // プレイヤー名の表示変更
+        ShowKawa();    // 河の表示
+        ResetInput();       // ツモ打牌入力のリセット
+
+    }
+
+    // 河の表示
+    private void ShowKawa()
+    {
+        // 一旦河を全削除
+        for (int k = 0; k < 3; k ++)
+        {
+            foreach ( Transform n in panelKawas[k].transform )
+            {
+                GameObject.Destroy(n.gameObject);
+            }
+
+        }
+
+
+        haifuData = haifuData.GetComponent<HaifuData>();
+
+        for (int i = 0; i < haifuData.kawa[turnPlayerId].Count; i++)
+        {
+            int j = 0;
+
+            if (i >= 12)
+            {
+                j = 2;
+            }
+            else if (i >= 6)
+            {
+                j = 1;
+            }
+            else
+            {
+                j = 0;
+            }
+
+            int haiId = haifuData.kawa[turnPlayerId][i];
+            GameObject kawaHaiObj = Instantiate(kawaHaiPrefab, panelKawas[j].transform);
+            Image kawaHaiImage = kawaHaiObj.GetComponent<Image>();
+            kawaHaiImage.sprite = haiEnts[haiId].haiSprite;
         }
     }
 

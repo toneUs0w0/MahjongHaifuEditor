@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 26e87f9d32078415eb2274f77434a560, type: 3}
-  m_Name: s1
+  m_Name: s4
   m_EditorClassIdentifier: 
   haiId: 0
-  haiSprite: {fileID: 21300000, guid: 486b43698d17445398bfbe46d6d992a8, type: 3}
+  haiSprite: {fileID: 21300000, guid: ec12cc439ed8c46e4a03ddaae860adbe, type: 3}
