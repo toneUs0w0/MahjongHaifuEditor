@@ -10,12 +10,14 @@ public class HaifuData : MonoBehaviour
 
     public List<Turn> haifus;
     public List<List<int>> kawa;
+    public List<List<int>> haipai;
 
     public List<int> dora;
     public List<int> uradora;
 
     //多分この実装は微妙なので変えたい
     private void Start() {
+        this.taikyokuName = "title";
         this.haifus = new List<Turn>();
         this.playerNames = new List<string>() {"東", "南", "西", "北"};
         this.kawa = new List<List<int>>();
@@ -24,6 +26,15 @@ public class HaifuData : MonoBehaviour
             List<int> k = new List<int>();
             this.kawa.Add(k);
         }
+        // 手牌の初期化
+        List<int> tehaiIdList = new List<int>() { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        // 配牌の初期化
+        this.haipai = new List<List<int>>();
+        for (int i = 0; i < 4; i ++)
+        {
+            this.haipai.Add(new List<int>(tehaiIdList));
+        }
+
     }
 
     // コンストラクタ

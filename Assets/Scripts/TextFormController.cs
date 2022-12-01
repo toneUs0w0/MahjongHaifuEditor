@@ -5,7 +5,10 @@ using UnityEngine.UI;
 
 public class TextFormController : MonoBehaviour
 {
+    public SystemManager systemManager;
+
     public GameObject taikyokuView;
+    public TaikyokuManager taikyokuManager;
     public GameObject inputFormView;
     public HaifuData haifu;
 
@@ -56,6 +59,7 @@ public class TextFormController : MonoBehaviour
         }
 
         // このへんはもっと大枠のclassが必要な気がする
+        taikyokuManager.InitTaikyokuView();
         taikyokuView.SetActive(true);
         inputFormView.SetActive(false);
 
@@ -94,8 +98,8 @@ public class TextFormController : MonoBehaviour
         }
 
         // このへんはもっと大枠のclassが必要な気がする
-        taikyokuView.SetActive(true);
-        inputFormView.SetActive(false);
+        systemManager.Form2Haipaisetting();
+        
 
     }
 

@@ -9,6 +9,7 @@ public class TaikyokuManager : MonoBehaviour
     public Image imageTumo;  // ツモ牌の画面表示
     public Image imageDahai;     // 打牌の画面表示
     public Text textPlayer;
+    public Text textTaikyokuName;
     public Text textBanner;
 
     public Image imageFrameTumo;
@@ -49,6 +50,23 @@ public class TaikyokuManager : MonoBehaviour
         ResetInput();
         FrameSetting();
         SetPlayerName();
+        SetTaikyokuName();
+    }
+
+    // １ターン目のプレイヤー名と対局名が表示されない(Set関数がstart以降呼ばれない)問題のため今だけ置いている
+    // 最終的には編集ボタンが押されたinitializeをsystemmanagerに記述するべき？
+    //void Update()
+   //{
+        //SetTaikyokuName();
+        //SetPlayerName();
+    //}
+
+    // startではなく対局編集が開始されるたびに呼び出す初期化
+    public void InitTaikyokuView()
+    {
+        print("Init Taikyoku View");
+        SetPlayerName();
+        SetTaikyokuName();
     }
 
     // 牌譜の取得 
@@ -111,14 +129,23 @@ public class TaikyokuManager : MonoBehaviour
 
     private void SetPlayerName()
     {
-        if ( turnPlayerId < 0 || 4 < turnPlayerId )
+        haifuData = haifuObj.GetComponent<HaifuData>();
+
+        if ( turnPlayerId < 0 || 4 < turnPlayerId || haifuData.playerNames.Count < 4)
         {
-            print("turnPlayerId ERROR");
+
             return;
         }
 
         textPlayer.text = haifuData.playerNames[turnPlayerId];
 
+    }
+
+    private void SetTaikyokuName()
+    {
+        haifuData = haifuObj.GetComponent<HaifuData>();
+        // print("set taikyoku name : " + haifuData.taikyokuName);
+        textTaikyokuName.text = haifuData.taikyokuName;
     }
 
     public void PushHaiButton(int HaiId)
