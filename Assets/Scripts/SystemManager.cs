@@ -8,9 +8,11 @@ public class SystemManager : MonoBehaviour
     public GameObject taikyokuView;
     public GameObject textFormView;
     public GameObject haipaisettingView;
+    public GameObject showOutputView;
 
     public TaikyokuManager taikyokuManager;
     public HaipaiSettingManager haipaiSettingManager;
+    public Text textUrl;
 
     // Start is called before the first frame update
     void Start()
@@ -18,6 +20,7 @@ public class SystemManager : MonoBehaviour
         taikyokuView.SetActive(false);
         textFormView.SetActive(true);
         haipaisettingView.SetActive(false);
+        showOutputView.SetActive(false);
     }
 
     // 配牌入力後対局入力へ
@@ -45,6 +48,12 @@ public class SystemManager : MonoBehaviour
         textFormView.SetActive(false);
 
         taikyokuManager.InitTaikyokuView();
+    }
+
+    public void showOutput(string url)
+    {
+        textUrl.text = url;
+        showOutputView.SetActive(true);
     }
 
 }
