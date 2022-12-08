@@ -371,11 +371,20 @@ public class TaikyokuManager : MonoBehaviour
         ShowNakiFirstPanel(false);
         ShowHaiNotInTehaiDialog(HaiId:0, show:false);
     }
+
    // 鳴きパネルの表示
     public void ShowNakiPanel(bool show, int mode = 1)
     {
         nakiPanel.SetActive(show);
         nakiPanelShown = show;
+
+        if (!show)
+        {
+            ShowPonPanel(false);
+            ShowChiPanel(false);
+            ShowNakiFirstPanel(false);
+            ShowHaiNotInTehaiDialog(HaiId:0, show:false);
+        }
 
         // 鳴きパネルの表示
         if ((mode == 1) && show && haifuData.haifus.Count > 0)
@@ -567,7 +576,7 @@ public class TaikyokuManager : MonoBehaviour
     public void ChiInput(int HaiId1, int HaiId2, int HaiId3)
     {
         List<string> furo = new List<string> {"c" + (HaiId1 + 10).ToString(), (HaiId2 + 10).ToString(), (HaiId3 + 10).ToString()};
-        AllPanelClose();
+        ShowNakiPanel(false); // パネルを閉じる
         settedFuroHai = new List<string>(furo);
         yamaNum += 1; // 山を一枚増やす(ツモってないので)
         ShowHaiyama(decl:false);
@@ -579,7 +588,6 @@ public class TaikyokuManager : MonoBehaviour
         FrameSetting();
 
     }
-
 
 
     //--------------------------------------------------------
@@ -750,6 +758,45 @@ public class TaikyokuManager : MonoBehaviour
 
     }
 
+
+    //--------------------------------------------------------
+    //
+    //                 戻るボタン
+    //
+    //--------------------------------------------------------
+
+    public void PushReturnButton()
+    {
+        if (haifuData.haifus.Count == 0) //牌譜が0なら戻れない
+        {
+            return;
+        }
+        string act = haifuData.haifus[haifuData.haifus.Count - 1].actionType;
+        haifuData.haifus.RemoveAt(haifuData.haifus.Count - 1); // 末尾の削除
+
+        turnPlayerId =  (turnPlayerId - 1) % 4;
+        SetPlayerName();    // プレイヤー名の表示変更
+        tehaiCorrect = false; // 一旦
+        if (useTehaiHyouji)
+        {
+            ShowTehai(); // 手牌表示をどう戻すかは課題 // 配牌から遡って手牌を再構築する関数が必要
+        }
+        ShowKawa();    // 河の表示
+        ResetInput();       // ツモ打牌入力のリセット
+        if (act == "Nomal")
+        {
+            yamaNum += 1;
+            ShowHaiyama(decl:false);  // 鳴き以外なら牌山を増やす
+        }
+        ponFlag = false; 
+        chiFlag = false;  
+        FrameTextSetting();
+         // ログの再表示
+         AllLogApdate();
+
+
+    }
+
     
 
     //--------------------------------------------------------
@@ -773,7 +820,20 @@ public class TaikyokuManager : MonoBehaviour
         Image imageTurnLogObj = turnLogObj.GetComponent<Image>();
         imageTurnLogObj.color =logColors[Turn.playerId];
 
+    }
 
+    private void AllLogApdate()
+    {
+        // 一旦候補を全消し
+        foreach ( Transform n in panelHaifuLog.transform )
+        {
+            GameObject.Destroy(n.gameObject);
+        }
+        // 全てのhaifuをログに追加
+        foreach(Turn turn in haifuData.haifus)
+        {
+            CreateTurnLog(turn);
+        }
     }
 
     //--------------------------------------------------------
@@ -786,8 +846,15 @@ public class TaikyokuManager : MonoBehaviour
     {  
         CreateHaifuUrl createHaifuUrl = haifuData.GetComponent<CreateHaifuUrl>();
         string stringUrl = createHaifuUrl.CreateHaifuUrlFromHaifuData();
-        Application.OpenURL(stringUrl);
+        //Application.OpenURL(stringUrl);
+        OpenWeb(stringUrl);
         systemManager.showOutput(stringUrl);
+    }
+
+    private void OpenWeb(string Url)
+    {
+        var uri = new System.Uri(Url);
+        Application.OpenURL(uri.AbsoluteUri);
     }
 
 
