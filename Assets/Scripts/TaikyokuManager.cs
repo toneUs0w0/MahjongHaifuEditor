@@ -352,6 +352,7 @@ public class TaikyokuManager : MonoBehaviour
     //--------------------------------------------------------
 
     public bool ponPanelShown;
+    public GameObject chiPanel;
    // 鳴きパネルの表示
     public void ShowNakiPanel(bool show, int mode = 1)
     {
@@ -396,6 +397,11 @@ public class TaikyokuManager : MonoBehaviour
             ShowNakiPanel(true);
         }
     }
+
+
+    // - - - - - - - - - - - - - - - - - - - -
+    //                   ポン
+    // - - - - - - - - - - - - - - - - - - - - 
 
     // ポンボタン
     public void PushPonButton()
@@ -465,6 +471,38 @@ public class TaikyokuManager : MonoBehaviour
         //turn = AddTrun2Haifu(from, )
         //(int PlayerId, int TumoHaiId, int DahaiId, string Action, List<int> HuroHaiId)
 
+    }
+
+    // - - - - - - - - - - - - - - - - - - - -
+    //                   チー
+    // - - - - - - - - - - - - - - - - - - - - 
+
+    // チーボタン
+    public void PushChiButton()
+    {
+        ShowNakiFirstPanel(false);
+        ShowChiPanel(true);
+
+    }
+
+    // 鳴きパネルでチーを選択した際の表示
+    private void ShowChiPanel(bool show)
+    {
+        chiPanel.SetActive(show);
+        
+        if (show)
+        {
+            int ignorePlayerId = haifuData.haifus[haifuData.haifus.Count-1].playerId;
+            int playerId = (ignorePlayerId + 1) % 4;
+            List<string> position = new List<string>() {"東", "南", "西", "北"};
+            for (int i = 0; i < 3; i++)
+            {
+                PlayerButtonContent playerButtonContent = ponButtons[i].GetComponent<PlayerButtonContent>();
+                playerButtonContent.SetContent(playerId, ignorePlayerId, "[" + position[playerId] + "]  " + haifuData.playerNames[playerId]);
+                print(haifuData.playerNames[playerId]);
+                playerId = (playerId + 1) % 4;
+            }
+        }
     }
 
     //--------------------------------------------------------
