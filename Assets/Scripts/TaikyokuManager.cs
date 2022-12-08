@@ -13,14 +13,17 @@ public class TaikyokuManager : MonoBehaviour
     public Text textPlayer;
     public Text textTaikyokuName;
     public Text textBanner;
+    public Text frameText;
 
     public Image imageFrameTumo;
     public Image imageFrameDahai;
     public int settedTumoHaiId;  // ツモ牌の牌id
     public int settedDahaiId;
+    public List<string> settedFuroHai;
 
     private HaifuData haifuData;
     public bool isTumoEditing;
+    public bool ponFlag;
     public int turnPlayerId;
 
     public GameObject panelHaifuLog;
@@ -60,6 +63,7 @@ public class TaikyokuManager : MonoBehaviour
         panelKawas.Add(panelKawa3);
 
         isTumoEditing = true;
+        ponFlag = false;
         turnPlayerId = 0;
 
         ResetInput();
@@ -85,6 +89,8 @@ public class TaikyokuManager : MonoBehaviour
         SetTaikyokuName();
         ShowRyukyokuButton(false);
         ShowNakiPanel(false);
+        InitTehai(UsingHaipai:true);
+        ShowTehai();
         yamaNum = 69;  // 山枚数の初期化
     }
 
@@ -113,6 +119,18 @@ public class TaikyokuManager : MonoBehaviour
         settedDahaiId = 0;
     }
 
+    private void FrameTextSetting()
+    {
+        if (ponFlag)
+        {
+            frameText.text = "ポン";
+        }
+        else
+        {
+            frameText.text = "ツモ";
+        }
+    }
+
     private void FrameSetting()
     {
         if (isTumoEditing)
@@ -130,7 +148,7 @@ public class TaikyokuManager : MonoBehaviour
     }
 
 
-    public Turn AddTrun2Haifu(int PlayerId, int TumoHaiId, int DahaiId, string Action)
+    public Turn AddTrun2Haifu(int PlayerId, int TumoHaiId, int DahaiId, string Action, List<string> HuroHaiId)
     {
         haifuData = haifuObj.GetComponent<HaifuData>();
         Turn turn = new Turn();
@@ -138,6 +156,7 @@ public class TaikyokuManager : MonoBehaviour
         turn.tumoHaiId = TumoHaiId;
         turn.dahaiId = DahaiId;
         turn.actionType = Action;
+        turn.furoHaiId = new List<string>(HuroHaiId);
         haifuData.haifus.Add(turn);
         //print(turn.playerId.ToString() + turn.tumoHaiId.ToString() + turn.dahaiId.ToString());
         print(haifuData.HaifuLogStr());
@@ -183,6 +202,7 @@ public class TaikyokuManager : MonoBehaviour
         PushNextbutton(); //牌譜登録処理全て
     }
 
+    // エディットモードの切り替え
     public void SwitchEditingMode()
     {
         isTumoEditing = !isTumoEditing;
@@ -193,18 +213,37 @@ public class TaikyokuManager : MonoBehaviour
     // Nextボタンの処理 (ログを作成して次の準備)
     public void PushNextbutton()
     {
-        if (isTumoEditing)
+        if (isTumoEditing)  //ツモ牌入力の処理
         {
             isTumoEditing = false;
             FrameSetting();
         }
-        else
+        else  //打牌入力の処理
         {
+            // 手牌表示のエラーチェック
+            if (tehaiCorrect)
+            {
+                bool continueNextButton = TehaiChange(settedTumoHaiId, settedDahaiId);
+                if (continueNextButton == false)  // 手牌入力でエラーを起こして戻る場合
+                {
+                    return;
+                }
+            }
+
             isTumoEditing = true;
             FrameSetting();
-            Turn turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Nomal");
+            Turn turn = new Turn();
+
+            if (ponFlag)
+            {
+                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Pon", HuroHaiId: settedFuroHai);
+            }
+            else
+            {
+                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Nomal", HuroHaiId: new List<string>());
+            }
             CreateTurnLog(turn);
-            PrepareNextHaifuInput();
+            PrepareNextHaifuInput();           
    
         }
     }
@@ -214,9 +253,15 @@ public class TaikyokuManager : MonoBehaviour
     {
         turnPlayerId = (turnPlayerId + 1) % 4;   // プレイヤーの更新
         SetPlayerName();    // プレイヤー名の表示変更
+        if (useTehaiHyouji)
+        {
+            ShowTehai(); // 手牌表示
+        }
         ShowKawa();    // 河の表示
         ResetInput();       // ツモ打牌入力のリセット
         ShowHaiyama(decl:true);  // 残り山枚数の表示
+        ponFlag = false;  // 各種フラグの修正
+        FrameTextSetting();
         // 山が0枚なら流局ボタンを表示
         if (yamaNum == RYUUKYOKU_YAMANUM)
         {
@@ -308,11 +353,13 @@ public class TaikyokuManager : MonoBehaviour
 
     public bool ponPanelShown;
    // 鳴きパネルの表示
-    private void ShowNakiPanel(bool show)
+    public void ShowNakiPanel(bool show, int mode = 1)
     {
         nakiPanel.SetActive(show);
         nakiPanelShown = show;
-        if (show && haifuData.haifus.Count > 0)
+
+        // 鳴きパネルの表示
+        if ((mode == 1) && show && haifuData.haifus.Count > 0)
         {
             // パネルコンストラクタは別で実装
             ShowNakiFirstPanel(true);
@@ -321,6 +368,15 @@ public class TaikyokuManager : MonoBehaviour
             int dahaiId = haifuData.haifus[haifuData.haifus.Count - 1].dahaiId;
             imageNakiHai.sprite = haiEnts[dahaiId].haiSprite;
         }
+
+        // 手牌表示のエラーダイアログ
+        if (mode == 2)
+        {
+            ShowNakiFirstPanel(false); // 一応
+            ShowPonPanel(false); // 一応
+            ShowHaiNotInTehaiDialog(HaiId:settedDahaiId, show:true);
+        }
+
     }
     // 鳴きパネルの表示
     private void ShowNakiFirstPanel(bool show)
@@ -349,6 +405,7 @@ public class TaikyokuManager : MonoBehaviour
 
     }
 
+    // 鳴きパネルでポンを選択した際の表示
     private void ShowPonPanel(bool show)
     {
         ponPanel.SetActive(show);
@@ -367,13 +424,224 @@ public class TaikyokuManager : MonoBehaviour
         }
     }
 
-    // 後で実装
     public void PonInput(int from, int to)
     {
-        int dahaiId = haifuData.haifus[haifuData.haifus.Count - 1].dahaiId;
+        ShowNakiPanel(false); // パネルを閉じる
+        int dId = haifuData.haifus[haifuData.haifus.Count - 1].dahaiId;
+        int dahaiId = dId + 10;
+        List<string> furo = new List<string> {dahaiId.ToString(), dahaiId.ToString(), dahaiId.ToString()};
+        int from_to_switch = (from - to) % 4;
+
+        switch (from_to_switch)
+        {
+            case 1:
+                // 上家から鳴き
+                furo[0] = 'p' + dahaiId.ToString();
+                break;
+            case 2:
+                // 対面から鳴き
+                furo[1] = 'p' + dahaiId.ToString();
+                break;
+            case 3:
+                // 下家から鳴き
+                furo[2] = 'p' + dahaiId.ToString();
+                break;
+            default:
+                break;
+        }
+        settedFuroHai = new List<string>(furo);
+
+        // ポンの情報を持ったまま打牌入力に行く
+        yamaNum += 1; // 山を一枚増やす(ツモってないので)
+        ShowHaiyama(decl:false);
+        isTumoEditing = true;  // 一応
+        PushHaiButton(dId);  // ポンした牌を登録
+        ponFlag = true;     // ポンフラグを立てておく
+        isTumoEditing = false;
+        FrameTextSetting();
+        FrameSetting();
+        turnPlayerId = from;
+        SetPlayerName();
+        //turn = AddTrun2Haifu(from, )
+        //(int PlayerId, int TumoHaiId, int DahaiId, string Action, List<int> HuroHaiId)
 
     }
 
+    //--------------------------------------------------------
+    //
+    //                 手牌表示
+    //
+    //--------------------------------------------------------
+
+    public bool useTehaiHyouji;
+    public bool tehaiCorrect; // private
+    private List<List<int>> tehaiIds;
+    public List<Image> imageTehaiList;
+    public GameObject haiNotInTehaiPanel;
+    public Image image_HaiNotInTehaiPanel;
+
+    // tehaiIdsの初期化
+    private void InitTehai(bool UsingHaipai)
+    {
+        tehaiCorrect = true;
+        useTehaiHyouji = true; // 後ほど変更
+
+        tehaiIds = new List<List<int>>();
+
+        if (UsingHaipai)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (haifuData.haipai[i].Count != 13)
+                {
+                    print("Haipai not exist ERROR");
+                    return;
+                }
+
+                tehaiIds.Add(new List<int>(haifuData.haipai[i]));
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                tehaiIds.Add(new List<int>() {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+            }
+        }
+    }
+    // tehaiIds[turnPlayerId]の情報をImageに反映
+    private void ShowTehai()
+    {
+        for(int i = 0; i < tehaiIds[turnPlayerId].Count; i++)
+        {
+            ShowHai2Tehai(i, tehaiIds[turnPlayerId][i]);
+        }
+    }
+
+    // 手牌の一枚にspriteをセット
+    private void ShowHai2Tehai(int TehaiIndex, int HaiId)
+    {
+        imageTehaiList[TehaiIndex].sprite = haiEnts[HaiId].haiSprite;
+    }
+
+    // turnPlayerのtehaiIdsの更新
+    private bool TehaiChange(int TumoId, int DahaiId)
+    {
+        if (!tehaiCorrect) // 手牌が正しくない場合はそもそも実施しない
+        {
+            return true; // 今エラーを検知したわけでは無いのでtrueを返す
+        }
+
+        if (TumoId == DahaiId) // ツモと打牌が同じ場合は手牌に無いが問題無い // 赤についても条件を足すべき
+        {
+            return true;
+        }
+
+        bool dahaiExist = false;
+        for (int i = 0; i < tehaiIds[turnPlayerId].Count; i++)
+        {
+            if (tehaiIds[turnPlayerId][i] == DahaiId)
+            {
+                tehaiIds[turnPlayerId][i] = TumoId;  //打牌の代わりにツモ牌を入れる  //鳴きの場合は後で
+                dahaiExist = true;
+                break;
+            }
+        }
+
+        if (!dahaiExist)  // 打牌が手牌にない場合
+        {
+            ShowNakiPanel(show:true, mode:2); // エラーダイアログ表示
+            return false; // 一旦処理は終了
+
+        }
+
+        SortAllTehai();  // 全ての手牌をソート
+        return true;
+    
+    }
+
+    // 0を後ろに回したソート
+    private void SortAllTehai()
+    {
+        int pos = 0;
+        int delete = 0;
+        List<int> tmp_tehai;
+        for(int i = 0; i < 4; i++)
+        {
+            pos = 0;
+            delete = 0;
+            tmp_tehai = new List<int>(tehaiIds[i]);
+            tmp_tehai.Sort();
+            for (int j = 0; j < tmp_tehai.Count; j++)
+            {
+                int tId = tmp_tehai[j];
+                if (tId == 0)
+                {
+                    delete++;
+                }
+                else
+                {
+                    print("tehailength : " + tmp_tehai.Count.ToString());
+                    print("pos : " + pos.ToString());
+                    
+                    tmp_tehai[pos] = tId;
+                    pos++;
+                }
+            }
+            for (int k = pos; k < tmp_tehai.Count; k++)
+            {
+                tmp_tehai[k] = 0;
+            }
+            tehaiIds[i] = new List<int>(tmp_tehai);
+        }
+        
+
+    }
+
+    // 手牌に無い牌を打牌した時のエラー表示
+    // showNakiPanelから呼び出す
+    private void ShowHaiNotInTehaiDialog(int HaiId, bool show)
+    {
+        if (!show)
+        {
+            haiNotInTehaiPanel.SetActive(false);
+            return;
+        }
+        else
+        {
+            haiNotInTehaiPanel.SetActive(true);
+            image_HaiNotInTehaiPanel.sprite = haiEnts[HaiId].haiSprite;
+        }
+    }
+
+    //  コンテニューボタン
+    public void PushHaiNotInTehaiContinue()
+    {
+        // ダイアログを閉じる
+        ShowHaiNotInTehaiDialog(HaiId:0, show: false);
+        ShowNakiPanel(false);
+
+        // 次に呼び出さないように手牌入力をoffに
+        tehaiCorrect = false;
+        // 通常のnextbuttonの処理
+        PushNextbutton();
+    }
+
+    public void PushHaiNotInTehaiBack()
+    {
+        // ダイアログを閉じる
+        ShowHaiNotInTehaiDialog(HaiId:0, show: false);
+        ShowNakiPanel(false);
+
+    }
+
+    
+
+    //--------------------------------------------------------
+    //
+    //                 ログ画面
+    //
+    //--------------------------------------------------------
 
     private void CreateTurnLog(Turn Turn)
     {
@@ -393,6 +661,11 @@ public class TaikyokuManager : MonoBehaviour
 
     }
 
+    //--------------------------------------------------------
+    //
+    //                 URL作成
+    //
+    //--------------------------------------------------------
 
     private void CreateOutputData()
     {  

@@ -19,8 +19,9 @@ public class PlayerButtonContent : MonoBehaviour
             textButton.text = ShowString;
         }
 
-        public PushPlayerButton()
+        public void PushPlayerButton()
         {
-            taikyokuManager.PonInput(from:playerId, to:CallingPlayerId);
+            taikyokuManager.PonInput(from:playerId, to:callingPlayerId);
+            
         }
 }

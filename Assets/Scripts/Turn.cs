@@ -8,5 +8,6 @@ public class Turn
     public int tumoHaiId;
     public int dahaiId;
     public string actionType;
+    public List<string> furoHaiId;
 
 }

@@ -200,6 +200,9 @@ public class HaipaiSettingManager : MonoBehaviour
     // 牌譜データに配牌を登録し対局入力へ
     public void PushFinishButton()
     {
+        // 最後に表示している手牌をhaipaiIdListに記録
+        SaveTehaiId2HaipaiList();
+
         for (int i = 0; i < 4; i ++)
         {
             haifuData.haipai[i] = new List<int>(haipaiIdList[i]);
