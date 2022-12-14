@@ -25,6 +25,7 @@ public class TaikyokuManager : MonoBehaviour
     public bool isTumoEditing;
     public bool ponFlag;
     public bool chiFlag;
+    public bool daiminkanFlag;
     public int turnPlayerId;
 
     public GameObject panelHaifuLog;
@@ -46,7 +47,6 @@ public class TaikyokuManager : MonoBehaviour
     public GameObject ryuukyokuButton;
     public Image imageNakiHai;
     public bool nakiPanelShown;
-    public List<GameObject> ponButtons;
 
     private List<string> index2id = new List<string>() {"none", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m5r", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p5r", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s5r", "j1", "j2", "j3", "j4", "j5", "j6", "j7"};
     public List<HaiEntity> haiEnts = new List<HaiEntity>(); // private
@@ -66,6 +66,7 @@ public class TaikyokuManager : MonoBehaviour
         isTumoEditing = true;
         ponFlag = false;
         chiFlag = false;
+        daiminkanFlag = false;
         turnPlayerId = 0;
 
         ResetInput();
@@ -129,9 +130,14 @@ public class TaikyokuManager : MonoBehaviour
             frameText.text = "ポン";
             return;
         }
-        if (chiFlag)
+        else if (chiFlag)
         {
             frameText.text = "チー";
+            return;
+        }
+        else if (daiminkanFlag)
+        {
+            frameText.text = "大明槓";
             return;
         }
 
@@ -249,6 +255,10 @@ public class TaikyokuManager : MonoBehaviour
             {
                 turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Chi", HuroHaiId: settedFuroHai);
             }
+            else if (daiminkanFlag)
+            {
+                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Daiminkan", HuroHaiId: settedFuroHai);
+            }
             else
             {
                 turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Nomal", HuroHaiId: new List<string>());
@@ -273,6 +283,8 @@ public class TaikyokuManager : MonoBehaviour
         ShowHaiyama(decl:true);  // 残り山枚数の表示
         ponFlag = false;  // 各種フラグの修正
         chiFlag = false;  
+        daiminkanFlag = false;
+        RefreshAllDahaiFlag();
         FrameTextSetting();
         // 山が0枚なら流局ボタンを表示
         if (yamaNum == RYUUKYOKU_YAMANUM)
@@ -359,15 +371,25 @@ public class TaikyokuManager : MonoBehaviour
     //--------------------------------------------------------
 
     public bool ponPanelShown;
+    public GameObject daiminkanPanel;
+    public GameObject dahaiNakiPanel;
     public GameObject chiPanel;
     public GameObject chiCandButtonPrefab;
     public GameObject chiCandButtonParent;
+    public List<GameObject> ponButtons;
+    public List<GameObject> daiminkanButtons;
+
+    public bool onReach;
+    public bool onTumo;
+    public bool onAnkan;
+    public bool onKakan;
 
     private void AllPanelClose()
     {
         ShowNakiPanel(false);
         ShowPonPanel(false);
         ShowChiPanel(false);
+        ShowDaiminkanPanel(false);
         ShowNakiFirstPanel(false);
         ShowHaiNotInTehaiDialog(HaiId:0, show:false);
     }
@@ -432,6 +454,7 @@ public class TaikyokuManager : MonoBehaviour
         // 全フラグを切る
         ponFlag = false;
         chiFlag = false;
+        daiminkanFlag = false;
     } 
 
 
@@ -460,7 +483,7 @@ public class TaikyokuManager : MonoBehaviour
             for (int i = 0; i < 3; i++)
             {
                 PlayerButtonContent playerButtonContent = ponButtons[i].GetComponent<PlayerButtonContent>();
-                playerButtonContent.SetContent(playerId, ignorePlayerId, "[" + position[playerId] + "]  " + haifuData.playerNames[playerId]);
+                playerButtonContent.SetContent(playerId, ignorePlayerId, "[" + position[playerId] + "]  " + haifuData.playerNames[playerId], IsDaiminkan:false);
                 print(haifuData.playerNames[playerId]);
                 playerId = (playerId + 1) % 4;
             }
@@ -509,6 +532,79 @@ public class TaikyokuManager : MonoBehaviour
         //(int PlayerId, int TumoHaiId, int DahaiId, string Action, List<int> HuroHaiId)
 
     }
+
+    // - - - - - - - - - - - - - - - - - - - -
+    //                   大明かん
+    // - - - - - - - - - - - - - - - - - - - - 
+
+        // 大民間ボタン
+    public void PushDaiminkanButton()
+    {
+        ShowNakiFirstPanel(false);
+        ShowDaiminkanPanel(true);
+
+    }
+
+    // 鳴きパネルで大民間を選択した際の表示
+    private void ShowDaiminkanPanel(bool show)
+    {
+        daiminkanPanel.SetActive(show);
+        if (show)
+        {
+            int ignorePlayerId = haifuData.haifus[haifuData.haifus.Count-1].playerId;
+            int playerId = (ignorePlayerId + 1) % 4;
+            List<string> position = new List<string>() {"東", "南", "西", "北"};
+            for (int i = 0; i < 3; i++)
+            {
+                PlayerButtonContent playerButtonContent = daiminkanButtons[i].GetComponent<PlayerButtonContent>();
+                playerButtonContent.SetContent(playerId, ignorePlayerId, "[" + position[playerId] + "]  " + haifuData.playerNames[playerId], IsDaiminkan:true);
+                print(haifuData.playerNames[playerId]);
+                playerId = (playerId + 1) % 4;
+            }
+        }
+    }
+
+    public void DaiminkanInput(int from, int to)
+    {
+        ShowNakiPanel(false); // パネルを閉じる
+        int dId = haifuData.haifus[haifuData.haifus.Count - 1].dahaiId;
+        int dahaiId = dId + 10;
+        List<string> furo = new List<string> {dahaiId.ToString(), dahaiId.ToString(), dahaiId.ToString(), dahaiId.ToString()};
+        int from_to_switch = (from - to) % 4;
+
+        switch (from_to_switch)
+        {
+            case 1:
+                // 上家から鳴き
+                furo[0] = 'm' + dahaiId.ToString();
+                break;
+            case 2:
+                // 対面から鳴き
+                furo[1] = 'm' + dahaiId.ToString();
+                break;
+            case 3:
+                // 下家から鳴き
+                furo[3] = 'm' + dahaiId.ToString();
+                break;
+            default:
+                break;
+        }
+        settedFuroHai = new List<string>(furo);
+
+        yamaNum += 1; // 山を一枚増やす(ツモってないので)
+        ShowHaiyama(decl:false);
+        isTumoEditing = true;  // 一応
+        PushHaiButton(dId);  // ポンした牌を登録
+        daiminkanFlag = true;    
+        isTumoEditing = false;
+        FrameTextSetting();
+        FrameSetting();
+        turnPlayerId = from;
+        SetPlayerName();
+
+    }
+
+
 
     // - - - - - - - - - - - - - - - - - - - -
     //                   チー
@@ -587,6 +683,49 @@ public class TaikyokuManager : MonoBehaviour
         FrameTextSetting();
         FrameSetting();
 
+    }
+
+    // - - - - - - - - - - - - - - - - - - - -
+    //                   打牌時の鳴き
+    // - - - - - - - - - - - - - - - - - - - - 
+
+    private void RefreshAllDahaiFlag()
+    {
+        onReach = false;
+        onTumo = false;
+        onAnkan = false;
+        onKakan = false;
+    }
+
+    // - - - - - - - - - - - - - - - - - - - -
+    //                   リーチ
+    // - - - - - - - - - - - - - - - - - - - -  
+
+    public void PushDahaiModeselect(int mode)
+    {
+        RefreshAllDahaiFlag();
+        switch (mode)
+        {
+            case 0:
+                // リーチ
+                onReach = true;
+                break;
+            case 1:
+                // ツモ
+                onTumo = true;
+                break;
+            case 2:
+                // あんかん
+                onAnkan = true;
+                break;
+            case 3:
+                // かかん
+                onKakan = true;
+                break;
+            
+            default:
+                break;
+        }
     }
 
 
@@ -765,6 +904,8 @@ public class TaikyokuManager : MonoBehaviour
     //
     //--------------------------------------------------------
 
+    // 戻る場合に手牌管理ができずバグが起こるのを発見
+
     public void PushReturnButton()
     {
         if (haifuData.haifus.Count == 0) //牌譜が0なら戻れない
@@ -789,6 +930,7 @@ public class TaikyokuManager : MonoBehaviour
             ShowHaiyama(decl:false);  // 鳴き以外なら牌山を増やす
         }
         ponFlag = false; 
+        daiminkanFlag = false;
         chiFlag = false;  
         FrameTextSetting();
          // ログの再表示

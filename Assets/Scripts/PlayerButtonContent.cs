@@ -10,18 +10,28 @@ public class PlayerButtonContent : MonoBehaviour
         public string showString;
         public Text textButton;
         public TaikyokuManager taikyokuManager;
+        public bool isDaiminkan;
 
-        public void SetContent(int PlayerId, int CallingPlayerId, string ShowString)
+        public void SetContent(int PlayerId, int CallingPlayerId, string ShowString, bool IsDaiminkan)
         {
             playerId = PlayerId;
             callingPlayerId = CallingPlayerId;
             showString = ShowString;
             textButton.text = ShowString;
+            isDaiminkan = IsDaiminkan;
         }
 
         public void PushPlayerButton()
         {
-            taikyokuManager.PonInput(from:playerId, to:callingPlayerId);
+            if (isDaiminkan)
+            {
+                taikyokuManager.DaiminkanInput(from:playerId, to:callingPlayerId);
+            }
+            else
+            {
+                taikyokuManager.PonInput(from:playerId, to:callingPlayerId);
+            }
+            
             
         }
 }
