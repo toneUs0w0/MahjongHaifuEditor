@@ -115,6 +115,11 @@ public class CreateHaifuUrl : MonoBehaviour
                 tumos[turn.playerId].Add("\"" + string.Join("", turn.furoHaiId) + "\"");
                 dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));                
             }
+            else if (turn.actionType == "Daiminkan")
+            {
+                tumos[turn.playerId].Add("\"" + string.Join("", turn.furoHaiId) + "\"");
+                dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));
+            }
         }
 
         List<List<List<string>>> rtn = new List<List<List<string>>>();

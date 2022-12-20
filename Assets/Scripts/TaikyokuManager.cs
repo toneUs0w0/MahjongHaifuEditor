@@ -10,15 +10,20 @@ public class TaikyokuManager : MonoBehaviour
     public GameObject haifuObj;  // インスペクタでhaifuObjectを登録
     public Image imageTumo;  // ツモ牌の画面表示
     public Image imageDahai;     // 打牌の画面表示
+    public Image imageRinshan;
     public Text textPlayer;
     public Text textTaikyokuName;
     public Text textBanner;
     public Text frameText;
+    public Text frameTextDahai;
 
     public Image imageFrameTumo;
     public Image imageFrameDahai;
+    public Image imageFrameRinshan;
+    public GameObject rinshanPanel;
     public int settedTumoHaiId;  // ツモ牌の牌id
     public int settedDahaiId;
+    public int settedRinshanHaiId;
     public List<string> settedFuroHai;
 
     private HaifuData haifuData;
@@ -92,6 +97,7 @@ public class TaikyokuManager : MonoBehaviour
         SetTaikyokuName();
         ShowRyukyokuButton(false);
         ShowNakiPanel(false);
+        ShowRinshanPanel(false);
         InitTehai(UsingHaipai:true);
         ShowTehai();
         yamaNum = 69;  // 山枚数の初期化
@@ -121,6 +127,8 @@ public class TaikyokuManager : MonoBehaviour
         settedTumoHaiId = 0;
         imageDahai.sprite = haiEnts[0].haiSprite;
         settedDahaiId = 0;
+        imageRinshan.sprite = haiEnts[0].haiSprite;
+        settedRinshanHaiId = 0;
     }
 
     private void FrameTextSetting()
@@ -148,14 +156,26 @@ public class TaikyokuManager : MonoBehaviour
     {
         if (isTumoEditing)
         {
-         imageFrameTumo.enabled = true;
-         imageFrameDahai.enabled = false;
-         textBanner.text = "ツモ牌選択";
+            if (rinshanInputMode)
+            {
+                imageFrameTumo.enabled = false;
+                imageFrameDahai.enabled = false;
+                imageFrameRinshan.enabled = true;
+                textBanner.text = "嶺上牌選択";   
+            }
+            else
+            {
+                imageFrameTumo.enabled = true;
+                imageFrameDahai.enabled = false;
+                imageFrameRinshan.enabled = false;
+                textBanner.text = "ツモ牌選択";
+            }
         }
         else
         {
          imageFrameTumo.enabled = false;
          imageFrameDahai.enabled = true;
+         imageFrameRinshan.enabled = false;
          textBanner.text = "打牌選択";
         }
     }
@@ -203,8 +223,16 @@ public class TaikyokuManager : MonoBehaviour
     {
         if (isTumoEditing)
         {
-            imageTumo.sprite = haiEnts[HaiId].haiSprite;
-            settedTumoHaiId = HaiId;
+            if (rinshanInputMode)    // 嶺上牌の登録
+            {
+                imageRinshan.sprite = haiEnts[HaiId].haiSprite;
+                settedRinshanHaiId = HaiId;
+            }
+            else
+            {
+                imageTumo.sprite = haiEnts[HaiId].haiSprite;
+                settedTumoHaiId = HaiId;
+            }
         }
         else
         {
@@ -226,17 +254,40 @@ public class TaikyokuManager : MonoBehaviour
     // Nextボタンの処理 (ログを作成して次の準備)
     public void PushNextbutton()
     {
+
         if (isTumoEditing)  //ツモ牌入力の処理
         {
-            isTumoEditing = false;
-            FrameSetting();
+            if (daiminkanFlag && (rinshanInputMode == false)) // ダイミンカンの牌のログを登録してしまう
+            {
+                Turn turn = new Turn();
+                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: 0, Action: "Daiminkan", HuroHaiId: settedFuroHai);
+                CreateTurnLog(turn);
+                isTumoEditing = true; // 嶺上牌登録のため
+                rinshanInputMode = true;
+                FrameSetting();
+
+            }
+            else  // 通常のツモ処理
+            {
+                isTumoEditing = false;
+                FrameSetting();
+            }
+
         }
         else  //打牌入力の処理
         {
             // 手牌表示のエラーチェック
             if (tehaiCorrect)
             {
-                bool continueNextButton = TehaiChange(settedTumoHaiId, settedDahaiId);
+                bool continueNextButton = true;
+                if (rinshanInputMode)  // 嶺上牌を含めての確認
+                {
+                    continueNextButton = TehaiChange(settedRinshanHaiId, settedDahaiId);
+                }
+                else
+                {
+                    continueNextButton = TehaiChange(settedTumoHaiId, settedDahaiId);
+                }
                 if (continueNextButton == false)  // 手牌入力でエラーを起こして戻る場合
                 {
                     return;
@@ -255,9 +306,9 @@ public class TaikyokuManager : MonoBehaviour
             {
                 turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Chi", HuroHaiId: settedFuroHai);
             }
-            else if (daiminkanFlag)
+            else if (rinshanInputMode)
             {
-                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Daiminkan", HuroHaiId: settedFuroHai);
+                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedRinshanHaiId, DahaiId: settedDahaiId, Action: "Nomal", HuroHaiId: new List<string>());
             }
             else
             {
@@ -281,6 +332,7 @@ public class TaikyokuManager : MonoBehaviour
         ShowKawa();    // 河の表示
         ResetInput();       // ツモ打牌入力のリセット
         ShowHaiyama(decl:true);  // 残り山枚数の表示
+        ShowRinshanPanel(false);  // 嶺上パネルがあるなら非表示に
         ponFlag = false;  // 各種フラグの修正
         chiFlag = false;  
         daiminkanFlag = false;
@@ -405,6 +457,7 @@ public class TaikyokuManager : MonoBehaviour
             ShowPonPanel(false);
             ShowChiPanel(false);
             ShowNakiFirstPanel(false);
+            ShowDaiminkanPanel(false);
             ShowHaiNotInTehaiDialog(HaiId:0, show:false);
         }
 
@@ -496,7 +549,7 @@ public class TaikyokuManager : MonoBehaviour
         int dId = haifuData.haifus[haifuData.haifus.Count - 1].dahaiId;
         int dahaiId = dId + 10;
         List<string> furo = new List<string> {dahaiId.ToString(), dahaiId.ToString(), dahaiId.ToString()};
-        int from_to_switch = (from - to) % 4;
+        int from_to_switch = (from - to + 4) % 4;
 
         switch (from_to_switch)
         {
@@ -528,6 +581,8 @@ public class TaikyokuManager : MonoBehaviour
         FrameSetting();
         turnPlayerId = from;
         SetPlayerName();
+        ShowTehai();
+        
         //turn = AddTrun2Haifu(from, )
         //(int PlayerId, int TumoHaiId, int DahaiId, string Action, List<int> HuroHaiId)
 
@@ -570,7 +625,7 @@ public class TaikyokuManager : MonoBehaviour
         int dId = haifuData.haifus[haifuData.haifus.Count - 1].dahaiId;
         int dahaiId = dId + 10;
         List<string> furo = new List<string> {dahaiId.ToString(), dahaiId.ToString(), dahaiId.ToString(), dahaiId.ToString()};
-        int from_to_switch = (from - to) % 4;
+        int from_to_switch = (from - to + 4) % 4;
 
         switch (from_to_switch)
         {
@@ -587,20 +642,24 @@ public class TaikyokuManager : MonoBehaviour
                 furo[3] = 'm' + dahaiId.ToString();
                 break;
             default:
+                string logtext = "<color=yellow><ERROR> : daiminkan playerid is not correct\nFROM: " + from.ToString() + " - TO: " + to.ToString() + " = FROM_TO_SWITCH is " + from_to_switch.ToString() + "</color>";
+                Debug.Log(logtext);
                 break;
         }
         settedFuroHai = new List<string>(furo);
 
+        daiminkanFlag = true;   
+        turnPlayerId = from;  // ターンプレイヤーの変更はpushHaiButtonの前に行う  // ダイミンカンのログが変わっちゃうから 
         yamaNum += 1; // 山を一枚増やす(ツモってないので)
         ShowHaiyama(decl:false);
         isTumoEditing = true;  // 一応
-        PushHaiButton(dId);  // ポンした牌を登録
-        daiminkanFlag = true;    
-        isTumoEditing = false;
-        FrameTextSetting();
-        FrameSetting();
-        turnPlayerId = from;
+        PushHaiButton(dId);  // ダイミンカンした牌の登録 // この段階でダイミンカンのログが記述される // 嶺上インプットモードに変更
+        isTumoEditing = true;  // 嶺上牌登録のため
+        ShowRinshanPanel(true);
+        //FrameTextSetting();
+        //FrameSetting();
         SetPlayerName();
+        ShowTehai();
 
     }
 
@@ -697,13 +756,39 @@ public class TaikyokuManager : MonoBehaviour
         onKakan = false;
     }
 
+    private void FrameTextSettingDahai()
+    {
+        if (onReach)
+        {
+            frameTextDahai.text = "リーチ";
+            return;
+        }
+        //else if (onTumo)
+        //{
+            //frameText.text = "ツモあがり";
+            //return;
+        //}
+        else if (onAnkan)
+        {
+            frameTextDahai.text = "暗槓";
+            return;
+        }
+        else if (onKakan)
+        {
+            frameTextDahai.text = "加槓";
+            return;
+        }
+
+        frameTextDahai.text = "打牌";
+    }
+
     // - - - - - - - - - - - - - - - - - - - -
     //                   リーチ
     // - - - - - - - - - - - - - - - - - - - -  
 
     public void PushDahaiModeselect(int mode)
     {
-        RefreshAllDahaiFlag();
+        RefreshAllDahaiFlag(); // フラグのリフレッシュ
         switch (mode)
         {
             case 0:
@@ -726,6 +811,8 @@ public class TaikyokuManager : MonoBehaviour
             default:
                 break;
         }
+
+        FrameTextSettingDahai();
     }
 
 
@@ -895,6 +982,31 @@ public class TaikyokuManager : MonoBehaviour
         ShowHaiNotInTehaiDialog(HaiId:0, show: false);
         ShowNakiPanel(false);
 
+    }
+
+
+    //--------------------------------------------------------
+    //
+    //                 嶺上牌パネル
+    //
+    //--------------------------------------------------------
+
+    public bool rinshanInputMode;
+
+    private void ShowRinshanPanel(bool show)
+    {
+        if (!show)
+        {
+            rinshanPanel.SetActive(false);
+            imageRinshan.sprite = haiEnts[0].haiSprite;
+            rinshanInputMode = false;
+        }
+        else
+        {
+            rinshanPanel.SetActive(true);
+            imageRinshan.sprite = haiEnts[0].haiSprite;
+            rinshanInputMode = true;
+        }
     }
 
 
