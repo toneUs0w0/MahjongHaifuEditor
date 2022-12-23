@@ -59,6 +59,8 @@ public class TaikyokuManager : MonoBehaviour
 
     static int RYUUKYOKU_YAMANUM = 65;
 
+    private LogMessager logMessager;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -104,6 +106,7 @@ public class TaikyokuManager : MonoBehaviour
         ShowTehai();
         yamaNum = 69;  // 山枚数の初期化
         AllPanelClose();
+        DahaiModeSelectButtonShapeChanger();
     }
 
     // 牌譜の取得 
@@ -808,12 +811,15 @@ public class TaikyokuManager : MonoBehaviour
     //                   打牌時の鳴き
     // - - - - - - - - - - - - - - - - - - - - 
 
+    public List<GameObject> dahaiModeSelectButtons;
+
     private void RefreshAllDahaiFlag()
     {
         onReach = false;
         onTumo = false;
         onAnkan = false;
         onKakan = false;
+        DahaiModeSelectButtonShapeChanger();
     }
 
     // 現在のmodeをintで返す
@@ -865,6 +871,27 @@ public class TaikyokuManager : MonoBehaviour
         frameTextDahai.text = "打牌";
     }
 
+    // ボタンの色
+    private void DahaiModeSelectButtonShapeChanger()
+    {
+        if (dahaiModeSelectButtons.Count != 4)
+        {
+            logMessager.LogY("Dahai_Mode_Select_buttons are not setted.");
+            return;
+        }
+        for (int i = 0; i < 4; i ++)
+        {
+            ShapeController shapeController = dahaiModeSelectButtons[i].GetComponent<ShapeController>();
+            shapeController.offButtonShapeChange();
+        }
+
+        if (nowDahaiFlag() != 0) // セレクトされているボタンのみonにする
+        {
+            ShapeController shapeController = dahaiModeSelectButtons[nowDahaiFlag() - 1].GetComponent<ShapeController>();
+            shapeController.onButtonShapeChange();
+        }
+    }
+
     // - - - - - - - - - - - - - - - - - - - -
     //                   リーチ
     // - - - - - - - - - - - - - - - - - - - -  
@@ -875,6 +902,7 @@ public class TaikyokuManager : MonoBehaviour
         if (mode == nowDahaiFlag())
         {
             RefreshAllDahaiFlag();
+            FrameTextSettingDahai();
             return;
         }
 
@@ -901,7 +929,7 @@ public class TaikyokuManager : MonoBehaviour
             default:
                 break;
         }
-
+        DahaiModeSelectButtonShapeChanger();
         FrameTextSettingDahai();
     }
 

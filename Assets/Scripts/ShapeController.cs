@@ -4,13 +4,21 @@ using UnityEngine;
 
 public class ShapeController : MonoBehaviour
 {
+    private float darkGrayInt = 30;
+    private float rightGrayInt = 200;
 
     public void onButtonShapeChange()
     {
-        // 今のところどうすればいいかは謎
-        // shapeをいじりたいけど外側からどう介入すればいいのやら
-        //Shapes2D.Shape shape = this.GetComponent<Shapes2D.Shape>();
-       // shape.fillColor = new Color(200.0f/255.0f, 200.0f/255.0f, 200.0f/255.0f, 1.0f);
+        Shapes2D.Shape shape = GetComponent<Shapes2D.Shape>();
+        float darkGrayFloat = darkGrayInt/256;
+        shape.settings.fillColor = new Color(darkGrayFloat, darkGrayFloat, darkGrayFloat, 1);
+    }
+
+    public void offButtonShapeChange()
+    {
+        Shapes2D.Shape shape = GetComponent<Shapes2D.Shape>();
+        float rightGrayFloat = rightGrayInt/256;
+        shape.settings.fillColor = new Color(rightGrayFloat, rightGrayFloat, rightGrayFloat, 1);
     }
     
 
