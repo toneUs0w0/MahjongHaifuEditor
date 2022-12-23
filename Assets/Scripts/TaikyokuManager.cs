@@ -31,6 +31,7 @@ public class TaikyokuManager : MonoBehaviour
     public bool ponFlag;
     public bool chiFlag;
     public bool daiminkanFlag;
+    public bool beforeAnkanFlag;  //アンカン後の嶺上牌入力時に必要
     public int turnPlayerId;
 
     public GameObject panelHaifuLog;
@@ -72,6 +73,7 @@ public class TaikyokuManager : MonoBehaviour
         ponFlag = false;
         chiFlag = false;
         daiminkanFlag = false;
+        beforeAnkanFlag = false;
         turnPlayerId = 0;
 
         ResetInput();
@@ -147,6 +149,11 @@ public class TaikyokuManager : MonoBehaviour
         {
             frameText.text = "大明槓";
             return;
+        }
+        else if (beforeAnkanFlag)
+        {
+            frameText.text = "暗槓";  // 前順にアンカンした場合
+            return;   
         }
 
         frameText.text = "ツモ";
@@ -312,18 +319,15 @@ public class TaikyokuManager : MonoBehaviour
             {
                 action_type = "Pon";
                 huro_hai_id = settedFuroHai;
-                //turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Pon", DahaiAction: "Normal", HuroHaiId: settedFuroHai);
             }
             else if (chiFlag)
             {
                 action_type = "Chi";
                 huro_hai_id = settedFuroHai;
-                //turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Chi", DahaiAction: "Normal", HuroHaiId: settedFuroHai);
             }
             else if(rinshanInputMode)
             {
                 tumo_hai_id = settedRinshanHaiId;
-                //turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedRinshanHaiId, DahaiId: settedDahaiId, Action: "Normal", DahaiAction: "Normal", HuroHaiId: new List<string>());
             }
 
             // 打牌関係の変更
@@ -331,9 +335,14 @@ public class TaikyokuManager : MonoBehaviour
             {
                 dahai_action_type = "Reach";
             }
+            if (onAnkan)
+            {
+                dahai_action_type = "Ankan"; // 副露牌の作成はcreateHaifuUrlにパス
+            }
 
             turn = AddTrun2Haifu(PlayerId: turn_palyer_id, TumoHaiId: tumo_hai_id, DahaiId: dahai_id, Action: action_type, DahaiAction: dahai_action_type, HuroHaiId: huro_hai_id);
             CreateTurnLog(turn);
+
             PrepareNextHaifuInput();           
    
         }
@@ -342,6 +351,12 @@ public class TaikyokuManager : MonoBehaviour
     //次の牌譜入力の準備
     private void PrepareNextHaifuInput()
     {
+        if (onAnkan)
+        {
+            PrepareNextHaifuInput4Ankan();
+            return;
+        }
+ 
         turnPlayerId = (turnPlayerId + 1) % 4;   // プレイヤーの更新
         SetPlayerName();    // プレイヤー名の表示変更
         if (useTehaiHyouji)
@@ -349,21 +364,46 @@ public class TaikyokuManager : MonoBehaviour
             ShowTehai(); // 手牌表示
         }
         ShowKawa();    // 河の表示
-        ResetInput();       // ツモ打牌入力のリセット
+        ResetInput();      // ツモ打牌入力のリセット
         ShowHaiyama(decl:true);  // 残り山枚数の表示
         ShowRinshanPanel(false);  // 嶺上パネルがあるなら非表示に
         ponFlag = false;  // 各種フラグの修正
         chiFlag = false;  
         daiminkanFlag = false;
+        beforeAnkanFlag = false;
         RefreshAllDahaiFlag();  // 打牌用ボタンのリセット
         FrameTextSettingDahai();
         FrameTextSetting();
-        // 山が0枚なら流局ボタンを表示
+        // 山が0枚なら流局ボタンを表示  // あがりは常にできるようにしたいかも
         if (yamaNum == RYUUKYOKU_YAMANUM)
         {
             ShowRyukyokuButton(true);
         }
 
+    }
+
+    //アンカンが入った場合の次局処理
+    private void PrepareNextHaifuInput4Ankan()
+    {
+        RefreshAllDahaiFlag();  // 打牌用ボタンのリセット //onAnkanもリセット対象
+        beforeAnkanFlag = true;
+        ShowRinshanPanel(true);
+        imageTumo.sprite = haiEnts[settedDahaiId].haiSprite; // ツモ牌imageにアンカンした牌を登録
+        settedTumoHaiId = settedDahaiId;
+        imageDahai.sprite = haiEnts[0].haiSprite; // 打牌imageは消す
+        settedDahaiId = 0;
+        ponFlag = false;  // 各種フラグの修正
+        chiFlag = false;  
+        daiminkanFlag = false;
+        rinshanInputMode = true;  // これをtrueにしないとFrameSettingできない
+        FrameSetting();
+        FrameTextSettingDahai();
+        FrameTextSetting();
+        // 山が0枚なら流局ボタンを表示  // あがりは常にできるようにしたいかも
+        if (yamaNum == RYUUKYOKU_YAMANUM)
+        {
+            ShowRyukyokuButton(true);
+        }
     }
 
     // 河の表示
@@ -776,6 +816,29 @@ public class TaikyokuManager : MonoBehaviour
         onKakan = false;
     }
 
+    // 現在のmodeをintで返す
+    private int nowDahaiFlag()
+    {
+        if (onReach)
+        {
+            return 1;
+        }
+        if (onTumo)
+        {
+            return 2;
+        }
+        if (onAnkan)
+        {
+            return 3;
+        }
+        if (onKakan)
+        {
+            return 4;
+        }
+
+        return 0;
+    }
+
     private void FrameTextSettingDahai()
     {
         if (onReach)
@@ -808,22 +871,29 @@ public class TaikyokuManager : MonoBehaviour
 
     public void PushDahaiModeselect(int mode)
     {
+        // 既に押されているボタンを再度押した場合
+        if (mode == nowDahaiFlag())
+        {
+            RefreshAllDahaiFlag();
+            return;
+        }
+
         RefreshAllDahaiFlag(); // フラグのリフレッシュ // 常に一つのmodeしか点灯しない
         switch (mode)
         {
-            case 0:
+            case 1:
                 // リーチ
                 onReach = true;
                 break;
-            case 1:
+            case 2:
                 // ツモ
                 onTumo = true;
                 break;
-            case 2:
+            case 3:
                 // あんかん
                 onAnkan = true;
                 break;
-            case 3:
+            case 4:
                 // かかん
                 onKakan = true;
                 break;
