@@ -100,25 +100,36 @@ public class CreateHaifuUrl : MonoBehaviour
 
         foreach(Turn turn in haifuData.haifus)
         {
-            if (turn.actionType == "Nomal")
+            // ツモ牌の登録
+            if (turn.actionType == "Normal")
             {
                 tumos[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.tumoHaiId));
-                dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));
+                //dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));
             }
             else if (turn.actionType == "Pon")
             {
                 tumos[turn.playerId].Add("\"" + string.Join("", turn.furoHaiId) + "\"");
-                dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));
+                //dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));
             }
             else if (turn.actionType == "Chi")
             {
                 tumos[turn.playerId].Add("\"" + string.Join("", turn.furoHaiId) + "\"");
-                dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));                
+                //dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));                
             }
             else if (turn.actionType == "Daiminkan")
             {
                 tumos[turn.playerId].Add("\"" + string.Join("", turn.furoHaiId) + "\"");
+                //dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));
+            }
+
+            // 打牌の登録
+            if (turn.dahaiActionType == "Normal")
+            {
                 dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));
+            }
+            else if (turn.dahaiActionType == "Reach")
+            {
+                dahais[turn.playerId].Add("\"r" + HaiId2TenhouHaiIdStr(turn.dahaiId) + "\"");
             }
         }
 

@@ -181,7 +181,7 @@ public class TaikyokuManager : MonoBehaviour
     }
 
 
-    public Turn AddTrun2Haifu(int PlayerId, int TumoHaiId, int DahaiId, string Action, List<string> HuroHaiId)
+    public Turn AddTrun2Haifu(int PlayerId, int TumoHaiId, int DahaiId, string Action, string DahaiAction, List<string> HuroHaiId)
     {
         haifuData = haifuObj.GetComponent<HaifuData>();
         Turn turn = new Turn();
@@ -189,6 +189,7 @@ public class TaikyokuManager : MonoBehaviour
         turn.tumoHaiId = TumoHaiId;
         turn.dahaiId = DahaiId;
         turn.actionType = Action;
+        turn.dahaiActionType = DahaiAction;
         turn.furoHaiId = new List<string>(HuroHaiId);
         haifuData.haifus.Add(turn);
         //print(turn.playerId.ToString() + turn.tumoHaiId.ToString() + turn.dahaiId.ToString());
@@ -260,7 +261,7 @@ public class TaikyokuManager : MonoBehaviour
             if (daiminkanFlag && (rinshanInputMode == false)) // ダイミンカンの牌のログを登録してしまう
             {
                 Turn turn = new Turn();
-                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: 0, Action: "Daiminkan", HuroHaiId: settedFuroHai);
+                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: 0, Action: "Daiminkan", DahaiAction: "Normal", HuroHaiId: settedFuroHai);
                 CreateTurnLog(turn);
                 isTumoEditing = true; // 嶺上牌登録のため
                 rinshanInputMode = true;
@@ -298,22 +299,40 @@ public class TaikyokuManager : MonoBehaviour
             FrameSetting();
             Turn turn = new Turn();
 
+            // 以下turn作成用の変数
+            int turn_palyer_id = turnPlayerId;
+            int tumo_hai_id = settedTumoHaiId;
+            int dahai_id = settedDahaiId;
+            string action_type = "Normal";
+            string dahai_action_type = "Normal";
+            List<string> huro_hai_id = new List<string>();
+
+            // ツモ牌関係の変更
             if (ponFlag)
             {
-                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Pon", HuroHaiId: settedFuroHai);
+                action_type = "Pon";
+                huro_hai_id = settedFuroHai;
+                //turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Pon", DahaiAction: "Normal", HuroHaiId: settedFuroHai);
             }
             else if (chiFlag)
             {
-                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Chi", HuroHaiId: settedFuroHai);
+                action_type = "Chi";
+                huro_hai_id = settedFuroHai;
+                //turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Chi", DahaiAction: "Normal", HuroHaiId: settedFuroHai);
             }
-            else if (rinshanInputMode)
+            else if(rinshanInputMode)
             {
-                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedRinshanHaiId, DahaiId: settedDahaiId, Action: "Nomal", HuroHaiId: new List<string>());
+                tumo_hai_id = settedRinshanHaiId;
+                //turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedRinshanHaiId, DahaiId: settedDahaiId, Action: "Normal", DahaiAction: "Normal", HuroHaiId: new List<string>());
             }
-            else
+
+            // 打牌関係の変更
+            if (onReach)
             {
-                turn = AddTrun2Haifu(PlayerId: turnPlayerId, TumoHaiId: settedTumoHaiId, DahaiId: settedDahaiId, Action: "Nomal", HuroHaiId: new List<string>());
+                dahai_action_type = "Reach";
             }
+
+            turn = AddTrun2Haifu(PlayerId: turn_palyer_id, TumoHaiId: tumo_hai_id, DahaiId: dahai_id, Action: action_type, DahaiAction: dahai_action_type, HuroHaiId: huro_hai_id);
             CreateTurnLog(turn);
             PrepareNextHaifuInput();           
    
@@ -336,7 +355,8 @@ public class TaikyokuManager : MonoBehaviour
         ponFlag = false;  // 各種フラグの修正
         chiFlag = false;  
         daiminkanFlag = false;
-        RefreshAllDahaiFlag();
+        RefreshAllDahaiFlag();  // 打牌用ボタンのリセット
+        FrameTextSettingDahai();
         FrameTextSetting();
         // 山が0枚なら流局ボタンを表示
         if (yamaNum == RYUUKYOKU_YAMANUM)
@@ -788,7 +808,7 @@ public class TaikyokuManager : MonoBehaviour
 
     public void PushDahaiModeselect(int mode)
     {
-        RefreshAllDahaiFlag(); // フラグのリフレッシュ
+        RefreshAllDahaiFlag(); // フラグのリフレッシュ // 常に一つのmodeしか点灯しない
         switch (mode)
         {
             case 0:
@@ -1036,7 +1056,7 @@ public class TaikyokuManager : MonoBehaviour
         }
         ShowKawa();    // 河の表示
         ResetInput();       // ツモ打牌入力のリセット
-        if (act == "Nomal")
+        if (act == "Normal")
         {
             yamaNum += 1;
             ShowHaiyama(decl:false);  // 鳴き以外なら牌山を増やす
