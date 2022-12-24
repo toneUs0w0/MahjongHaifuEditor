@@ -50,6 +50,7 @@ public class TaikyokuManager : MonoBehaviour
     public GameObject nakiPanel;
     public GameObject nakiFirstPanel;
     public GameObject ponPanel;
+    public GameObject ronPanel;
     public GameObject ryuukyokuButton;
     public Image imageNakiHai;
     public bool nakiPanelShown;
@@ -493,6 +494,7 @@ public class TaikyokuManager : MonoBehaviour
     public GameObject chiCandButtonParent;
     public List<GameObject> ponButtons;
     public List<GameObject> daiminkanButtons;
+    public List<GameObject> ronButtons;
 
     public bool onReach;
     public bool onTumo;
@@ -506,6 +508,7 @@ public class TaikyokuManager : MonoBehaviour
         ShowChiPanel(false);
         ShowDaiminkanPanel(false);
         ShowNakiFirstPanel(false);
+        ShowRonFinishGameEditPanel(false);
         ShowHaiNotInTehaiDialog(HaiId:0, show:false);
     }
 
@@ -521,6 +524,7 @@ public class TaikyokuManager : MonoBehaviour
             ShowChiPanel(false);
             ShowNakiFirstPanel(false);
             ShowDaiminkanPanel(false);
+            ShowRonPanel(false);
             ShowHaiNotInTehaiDialog(HaiId:0, show:false);
         }
 
@@ -599,7 +603,7 @@ public class TaikyokuManager : MonoBehaviour
             for (int i = 0; i < 3; i++)
             {
                 PlayerButtonContent playerButtonContent = ponButtons[i].GetComponent<PlayerButtonContent>();
-                playerButtonContent.SetContent(playerId, ignorePlayerId, "[" + position[playerId] + "]  " + haifuData.playerNames[playerId], IsDaiminkan:false);
+                playerButtonContent.SetContent(playerId, ignorePlayerId, "[" + position[playerId] + "]  " + haifuData.playerNames[playerId], Mode:0);
                 print(haifuData.playerNames[playerId]);
                 playerId = (playerId + 1) % 4;
             }
@@ -675,7 +679,7 @@ public class TaikyokuManager : MonoBehaviour
             for (int i = 0; i < 3; i++)
             {
                 PlayerButtonContent playerButtonContent = daiminkanButtons[i].GetComponent<PlayerButtonContent>();
-                playerButtonContent.SetContent(playerId, ignorePlayerId, "[" + position[playerId] + "]  " + haifuData.playerNames[playerId], IsDaiminkan:true);
+                playerButtonContent.SetContent(playerId, ignorePlayerId, "[" + position[playerId] + "]  " + haifuData.playerNames[playerId], Mode:1);
                 print(haifuData.playerNames[playerId]);
                 playerId = (playerId + 1) % 4;
             }
@@ -723,6 +727,57 @@ public class TaikyokuManager : MonoBehaviour
         //FrameSetting();
         SetPlayerName();
         ShowTehai();
+
+    }
+
+    // - - - - - - - - - - - - - - - - - - - -
+    //                   ロン
+    // - - - - - - - - - - - - - - - - - - - - 
+    // ロンボタン
+    public GameObject panelFinishGameEditing;
+    public void PushRonButton()
+    {
+        ShowNakiFirstPanel(false);
+        ShowRonPanel(true);
+    }
+
+    // 鳴きパネルでロンを選択した際の表示
+    private void ShowRonPanel(bool show)
+    {
+        ronPanel.SetActive(show);
+        if (show)
+        {
+            int ignorePlayerId = haifuData.haifus[haifuData.haifus.Count-1].playerId;
+            int playerId = (ignorePlayerId + 1) % 4;
+            List<string> position = new List<string>() {"東", "南", "西", "北"};
+            for (int i = 0; i < 3; i++)
+            {
+                PlayerButtonContent playerButtonContent = ronButtons[i].GetComponent<PlayerButtonContent>();
+                playerButtonContent.SetContent(playerId, ignorePlayerId, "[" + position[playerId] + "]  " + haifuData.playerNames[playerId], Mode:2);
+                print(haifuData.playerNames[playerId]);
+                playerId = (playerId + 1) % 4;
+            }
+        }
+    }
+
+    private void ShowRonFinishGameEditPanel(bool show, int AgariPlayerId = 0, int HoujuPlayerId = 0)
+    {
+        if(show)
+        {
+            panelFinishGameEditing.SetActive(true);
+            CollAgariController coller = panelFinishGameEditing.GetComponent<CollAgariController>();
+            coller.CollInitController(AgariPlayerId, HoujuPlayerId);
+        }
+        else
+        {
+            panelFinishGameEditing.SetActive(false);
+        }
+    }
+
+    public void RonInput(int from, int to)
+    {
+        ShowNakiPanel(false); // パネルを閉じる
+        ShowRonFinishGameEditPanel(true, AgariPlayerId:from, HoujuPlayerId:to);
 
     }
 
