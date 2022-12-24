@@ -1269,7 +1269,7 @@ public class TaikyokuManager : MonoBehaviour
     //
     //--------------------------------------------------------
 
-    private void CreateOutputData()
+    public void CreateOutputData()
     {  
         CreateHaifuUrl createHaifuUrl = haifuData.GetComponent<CreateHaifuUrl>();
         string stringUrl = createHaifuUrl.CreateHaifuUrlFromHaifuData();

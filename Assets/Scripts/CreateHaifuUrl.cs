@@ -6,12 +6,12 @@ public class CreateHaifuUrl : MonoBehaviour
 {
     public HaifuData haifuData;
 
-    public string CreateHaifuUrlFromHaifuData(int finishId = 0)
+    public string CreateHaifuUrlFromHaifuData()
     {
         string title_str = "\"title\":[\"" + haifuData.taikyokuName + "\",\"" + haifuData.taikyokuSubTitle + "\"]";
         string player_str = "\"name\":[\"" + haifuData.playerNames[0] + "\",\"" + haifuData.playerNames[1] + "\",\"" + haifuData.playerNames[2] + "\",\"" + haifuData.playerNames[3] + "\"]";
         string rule_str = "\"rule\":{\"aka\":0}";
-        string honba_str = "[0,0,0]";
+        string honba_str = "[" + "0" + "," + haifuData.honba.ToString() + "," + haifuData.kyoutaku.ToString() + "]";
         string mochiten_str = "[" + haifuData.mochiten[0] + "," + haifuData.mochiten[1] + "," + haifuData.mochiten[2] + "," + haifuData.mochiten[3] + "]";
         //string dora_str = "[" + string.Join(",", haifuData.dora) + "]";
         string dora_str = "[" + "46" + "]";
@@ -26,13 +26,26 @@ public class CreateHaifuUrl : MonoBehaviour
             haipai_str_list.Add("[" + string.Join(",", h_str) + "]");
         }
 
-        switch (finishId)
+    
+        string finishType_str = "";
+        List<int> finishPointShift = new List<int>();
+        string finishPointShift_str = "";
+        string finish_other_str = "";
+        switch (haifuData.finishType)
         {
             case 0:
-                string finishType_str = "\"流局\"";
-                List<int> finishPointShift = new List<int>(){3000, -1000, -1000, -1000};
-                string finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
+                finishType_str = "\"流局\"";
+                finishPointShift = new List<int>(){3000, -1000, -1000, -1000};
+                finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
                 finish_str = "[" + finishType_str + "," + finishPointShift_str + "]";
+                break;
+
+            case 1:
+                finishType_str = "\"和了\"";
+                finishPointShift = new List<int>(haifuData.pointShift);
+                finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
+                finish_other_str = "[3,3,3,\"30符3飜2000点∀\"]";
+                finish_str = "[" + finishType_str + "," + finishPointShift_str + "," + finish_other_str + "]";
                 break;
             
             default:

@@ -18,7 +18,11 @@ public class HaifuData : MonoBehaviour
 
     public int ruleAka;
     public List<int> mochiten;
-    public List<int> honba;
+    public int honba;
+    public int kyoutaku;
+
+    public int finishType;  //0:流局 1:ロン
+    public List<int> pointShift;
 
     //多分この実装は微妙なので変えたい
     private void Start() {
@@ -49,12 +53,20 @@ public class HaifuData : MonoBehaviour
         List<int> dora = new List<int>();
         List<int> uradora = new List<int>();
 
-        // 持ち点の初期化
+        // 持ち点とポイントシフトの初期化
         this.mochiten = new List<int>();
+        this.pointShift = new List<int>();
         for (int i = 0; i < 4; i ++)
         {
             this.mochiten.Add(25000);
-        }   
+            this.pointShift.Add(0);
+        } 
+
+        // 本場と供託
+        this.honba = 0;
+        this.kyoutaku = 0;
+
+        finishType = 0;
 
     }
 
