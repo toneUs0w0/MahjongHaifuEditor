@@ -25,6 +25,9 @@ public class AgariController : MonoBehaviour
     private List<int> pointShift;
     private int selectedAgariPlayerId;
     private int selectedHoujuPlayerId;
+    private int hanNum; // 0-12
+    private int fuNum; // 0-10
+    private bool isOya;
     private int honba;
     private int kyoutaku;
     private bool reachPlayer1;
@@ -48,6 +51,10 @@ public class AgariController : MonoBehaviour
         selectedHoujuPlayerId = HoujuPlayerId;
         dropdownAgariPlayer.value = AgariPlayerId;
         dropdownHoujuPlayer.value = HoujuPlayerId;
+
+        hanNum = 0;
+        fuNum = 1;
+        SetValueToHansuuFuDropdown();
 
         // 供託、本場、リーチ棒の初期化 // haifuを参照して初期化する予定
         honba = 0;
@@ -84,6 +91,27 @@ public class AgariController : MonoBehaviour
             ShapeController shapeController = buttonPoint.GetComponent<ShapeController>();
             shapeController.offButtonShapeChange();
         }
+    }
+
+    //-----------------------------------------------------
+    //
+    //                移動点数
+    //
+    //-----------------------------------------------------
+
+    public Dropdown dropdownHansuu;
+    public Dropdown dropdownFu;
+
+    private void SetValueToHansuuFuDropdown()
+    {
+        dropdownHansuu.value = hanNum;
+        dropdownFu.value = fuNum;
+    }
+
+    public void ClickHansuuFuDropdown()
+    {
+        hanNum = dropdownHansuu.value;
+        fuNum = dropdownFu.value;
     }
 
     //-----------------------------------------------------
