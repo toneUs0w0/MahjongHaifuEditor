@@ -7,6 +7,8 @@ public class AgariController : MonoBehaviour
 {
     // inspectorから数値ボタンを登録
     public TaikyokuManager taikyokuManager;
+    public CSVReader csvData;
+
     public List<GameObject> pointButtons;
     public Text textKyoutakuNum;
     public Text textHonbaNum;
@@ -35,6 +37,8 @@ public class AgariController : MonoBehaviour
     private bool reachPlayer3;
     private bool reachPlayer4;
 
+    // fuNumの変換用
+    private List<int> fuId2FuNum = new List<int>() {20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110};
 
     private LogMessager logMessager;
 
@@ -52,8 +56,9 @@ public class AgariController : MonoBehaviour
         dropdownAgariPlayer.value = AgariPlayerId;
         dropdownHoujuPlayer.value = HoujuPlayerId;
 
-        hanNum = 0;
-        fuNum = 1;
+        hanNum = 0; // 1ハン
+        fuNum = 2;  // 30符
+        isOya = false;
         SetValueToHansuuFuDropdown();
 
         // 供託、本場、リーチ棒の初期化 // haifuを参照して初期化する予定
@@ -112,7 +117,53 @@ public class AgariController : MonoBehaviour
     {
         hanNum = dropdownHansuu.value;
         fuNum = dropdownFu.value;
+        CulcPointShift();
     }
+    
+    // csvから読み取った辞書のkeyを返す // 辞書にないなら空文字列を返却
+    private string MakePointShiftKey()
+    {
+        string c_p = "C";
+        string r_t = "R";
+        string _han_st = (hanNum + 1).ToString();
+        string _fu_st = fuId2FuNum[fuNum].ToString();
+        string _key;
+
+        if(isOya)
+        {
+            c_p = "P";
+        }
+        else
+        {
+            c_p = "C";
+        }
+
+        if(hanNum > 3)  //満貫以上なら符は0
+        {
+            _fu_st = "0";
+        }
+
+        _key = c_p + "_" + r_t + "_" + _han_st + "_" + _fu_st;  // keyを作成
+
+        //print(_key);
+
+        logMessager = new LogMessager();
+
+        if (csvData.pointDict.ContainsKey(_key))
+        {
+            //logMessager.LogY( _key + " is exist in pointDict.");
+            return _key;
+        }
+        else
+        {
+            logMessager.LogR( _key + " is Not exist in pointDict.");
+            return "";
+        }
+
+        
+    }
+
+
 
     //-----------------------------------------------------
     //
@@ -139,11 +190,19 @@ public class AgariController : MonoBehaviour
             return;
         }
 
+        string key = MakePointShiftKey();
+        if (key == "")
+        {
+            return;
+        }
+
         pointShift = new List<int>() {0, 0, 0, 0};
 
+        int ronPoint = csvData.pointDict[key][0];
+
         // あがりの点数
-        pointShift[selectedAgariPlayerId] += onPushPoint;
-        pointShift[selectedHoujuPlayerId] -= onPushPoint;
+        pointShift[selectedAgariPlayerId] += ronPoint;
+        pointShift[selectedHoujuPlayerId] -= ronPoint;
 
         // 本場
         pointShift[selectedAgariPlayerId] += honba * 300;
