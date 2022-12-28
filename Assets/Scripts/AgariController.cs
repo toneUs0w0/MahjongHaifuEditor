@@ -62,12 +62,16 @@ public class AgariController : MonoBehaviour
         SetValueToHansuuFuDropdown();
 
         // 供託、本場、リーチ棒の初期化 // haifuを参照して初期化する予定
-        honba = 0;
-        kyoutaku = 0;
+        honba = haifu.honba;
+        kyoutaku = haifu.kyoutaku;
         reachPlayer1 = false;
         reachPlayer2 = false;
         reachPlayer3 = false;
         reachPlayer4 = false;
+
+
+        textHonbaNum.text = honba.ToString();  // 本場の初期後に表示する
+        textKyoutakuNum.text = kyoutaku.ToString();
 
 
         // ログ

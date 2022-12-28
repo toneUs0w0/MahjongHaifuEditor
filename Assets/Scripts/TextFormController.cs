@@ -18,12 +18,27 @@ public class TextFormController : MonoBehaviour
     public InputField gameObjPlayerName3;
     public InputField gameObjPlayerName4;
 
+    public List<GameObject> GmOyaIcons;
+
+    public Dropdown dropdownKyoku;
+    public Dropdown dropdownHonba;
+    public Dropdown dropdownKyotaku;
+
     public string taikyokuStr;
     public List<string> playerNames;
+    private int kyokuNum;
+    private int honbaNum;
+    private int kyotakuNum;
+    private int oyaId;
 
     private void Start() {
         playerNames = new List<string>() {"東家", "西家", "南家", "北家"};
         taikyokuStr = "NoTitle";
+        kyokuNum = 0;
+        honbaNum = 0;
+        kyotakuNum = 0;
+        oyaId = 0;
+        ShowOyaIcon();
     }
 
     public void PushStartButton()
@@ -97,11 +112,43 @@ public class TextFormController : MonoBehaviour
             
         }
 
+        haifu.kyoku = kyokuNum;
+        haifu.honba = honbaNum;
+        haifu.kyoutaku = kyotakuNum;
+
         // このへんはもっと大枠のclassが必要な気がする
         systemManager.Form2Haipaisetting();
         
 
     }
 
+    public void OnClickDropdownHonba()
+    {
+        honbaNum = dropdownHonba.value;
+    }
+
+    public void OnClickDropdownKyoku()
+    {
+        kyokuNum = dropdownKyoku.value;
+        ShowOyaIcon();
+    }
+
+    public void OnClickDropdownKyotaku()
+    {
+        kyotakuNum = dropdownKyotaku.value;
+    }
+
+
+    private void ShowOyaIcon()
+    {
+        oyaId = kyokuNum % 4;
+
+        foreach(GameObject gmOyaIcon in GmOyaIcons)
+        {
+            gmOyaIcon.SetActive(false);
+        }
+        GmOyaIcons[oyaId].SetActive(true);
+
+    }
 
 }

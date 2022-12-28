@@ -18,6 +18,7 @@ public class HaifuData : MonoBehaviour
 
     public int ruleAka;
     public List<int> mochiten;
+    public int kyoku;
     public int honba;
     public int kyoutaku;
 

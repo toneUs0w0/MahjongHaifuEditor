@@ -98,6 +98,8 @@ public class TaikyokuManager : MonoBehaviour
     public void InitTaikyokuView()
     {
         print("Init Taikyoku View");
+        haifuData = haifuObj.GetComponent<HaifuData>();
+        turnPlayerId = haifuData.kyoku % 4;
         SetPlayerName();
         SetTaikyokuName();
         ShowRyukyokuButton(false);
@@ -907,11 +909,11 @@ public class TaikyokuManager : MonoBehaviour
             frameTextDahai.text = "リーチ";
             return;
         }
-        //else if (onTumo)
-        //{
-            //frameText.text = "ツモあがり";
-            //return;
-        //}
+        else if (onTumo)
+        {
+            frameText.text = "ツモあがり";
+            return;
+        }
         else if (onAnkan)
         {
             frameTextDahai.text = "暗槓";

@@ -11,7 +11,7 @@ public class CreateHaifuUrl : MonoBehaviour
         string title_str = "\"title\":[\"" + haifuData.taikyokuName + "\",\"" + haifuData.taikyokuSubTitle + "\"]";
         string player_str = "\"name\":[\"" + haifuData.playerNames[0] + "\",\"" + haifuData.playerNames[1] + "\",\"" + haifuData.playerNames[2] + "\",\"" + haifuData.playerNames[3] + "\"]";
         string rule_str = "\"rule\":{\"aka\":0}";
-        string honba_str = "[" + "0" + "," + haifuData.honba.ToString() + "," + haifuData.kyoutaku.ToString() + "]";
+        string honba_str = "[" + haifuData.kyoku.ToString() + "," + haifuData.honba.ToString() + "," + haifuData.kyoutaku.ToString() + "]";
         string mochiten_str = "[" + haifuData.mochiten[0] + "," + haifuData.mochiten[1] + "," + haifuData.mochiten[2] + "," + haifuData.mochiten[3] + "]";
         //string dora_str = "[" + string.Join(",", haifuData.dora) + "]";
         string dora_str = "[" + "46" + "]";
