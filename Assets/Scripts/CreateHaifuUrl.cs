@@ -31,6 +31,7 @@ public class CreateHaifuUrl : MonoBehaviour
         List<int> finishPointShift = new List<int>();
         string finishPointShift_str = "";
         string finish_other_str = "";
+        string finish_title_str = haifuData.finishTitle;
         switch (haifuData.finishType)
         {
             case 0:
@@ -44,7 +45,7 @@ public class CreateHaifuUrl : MonoBehaviour
                 finishType_str = "\"和了\"";
                 finishPointShift = new List<int>(haifuData.pointShift);
                 finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
-                finish_other_str = "[3,3,3,\"30符3飜2000点∀\"]";
+                finish_other_str = "[3,3,3,\"" + finish_title_str + "\"]";
                 finish_str = "[" + finishType_str + "," + finishPointShift_str + "," + finish_other_str + "]";
                 break;
             

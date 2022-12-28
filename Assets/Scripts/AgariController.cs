@@ -419,6 +419,15 @@ public class AgariController : MonoBehaviour
 
         haifu.pointShift = new List<int>(this.pointShift);
 
+        string _key = MakePointShiftKey();
+        string fu_str = "";
+        if (hanNum < 3)
+        {
+            fu_str = dropdownFu.options[fuNum].text;
+        }
+
+        haifu.finishTitle = fu_str + dropdownHansuu.options[hanNum].text + csvData.pointDict[_key][0].ToString() + "点";
+
         taikyokuManager.CreateOutputData();
     }
 

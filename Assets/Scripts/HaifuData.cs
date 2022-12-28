@@ -23,6 +23,7 @@ public class HaifuData : MonoBehaviour
 
     public int finishType;  //0:流局 1:ロン
     public List<int> pointShift;
+    public string finishTitle;
 
     //多分この実装は微妙なので変えたい
     private void Start() {
@@ -67,6 +68,7 @@ public class HaifuData : MonoBehaviour
         this.kyoutaku = 0;
 
         finishType = 0;
+        finishTitle = "30符3飜2000点∀";
 
     }
 
