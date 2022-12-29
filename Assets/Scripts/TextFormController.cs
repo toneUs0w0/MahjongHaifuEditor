@@ -13,6 +13,7 @@ public class TextFormController : MonoBehaviour
     public HaifuData haifu;
 
     public InputField inputFieldTaikyokuName;
+    public InputField inputFieldTaikyokuSubTitle;
     public InputField gameObjPlayerName1;
     public InputField gameObjPlayerName2;
     public InputField gameObjPlayerName3;
@@ -25,6 +26,7 @@ public class TextFormController : MonoBehaviour
     public Dropdown dropdownKyotaku;
 
     public string taikyokuStr;
+    private string taikyokuSubTitle;
     public List<string> playerNames;
     private int kyokuNum;
     private int honbaNum;
@@ -34,6 +36,7 @@ public class TextFormController : MonoBehaviour
     private void Start() {
         playerNames = new List<string>() {"東家", "西家", "南家", "北家"};
         taikyokuStr = "NoTitle";
+        taikyokuSubTitle = "";
         kyokuNum = 0;
         honbaNum = 0;
         kyotakuNum = 0;
@@ -89,6 +92,7 @@ public class TextFormController : MonoBehaviour
         }
 
         inputFieldTaikyokuName = inputFieldTaikyokuName.GetComponent<InputField>();
+        taikyokuSubTitle = inputFieldTaikyokuSubTitle.text;
         taikyokuStr = inputFieldTaikyokuName.text;
 
         playerNames[0] = gameObjPlayerName1.GetComponent<InputField>().text;
@@ -98,6 +102,7 @@ public class TextFormController : MonoBehaviour
 
         haifu = haifu.GetComponent<HaifuData>(); // ここで牌譜のインスタンスを作った方が良さそう
         haifu.taikyokuName = taikyokuStr;
+        haifu.taikyokuSubTitle = taikyokuSubTitle;
 
         for (int i = 0; i < 4; i ++)
         {
