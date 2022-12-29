@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class AgariController : MonoBehaviour
+public class TumoAgariController : MonoBehaviour
 {
-    //----------------------------------------
-    //
-    //            ロンあがり
-    //
-    //----------------------------------------
 
+    //----------------------------------------
+    //
+    //            ツモあがり
+    //
+    //----------------------------------------
 
     // inspectorから数値ボタンを登録
     public TaikyokuManager taikyokuManager;
@@ -30,10 +30,9 @@ public class AgariController : MonoBehaviour
 
     public HaifuData haifu;
 
-    private int onPushPoint;
+
     private List<int> pointShift;
     private int selectedAgariPlayerId;
-    private int selectedHoujuPlayerId;
     private int hanNum; // 0-12
     private int fuNum; // 0-10
     private bool isOya;
@@ -50,22 +49,27 @@ public class AgariController : MonoBehaviour
     private LogMessager logMessager;
 
     //  初期処理
-    public void InitAgariControllerRon(int AgariPlayerId, int HoujuPlayerId)
+    public void InitAgariControllerTumo(int AgariPlayerId)
     {
-        AllPointButtonOff();
         InitPointShiftView();
         InitDropdown();
-        onPushPoint = 0;
 
         // プルダウンにはfromとtoを代入しておく
         selectedAgariPlayerId = AgariPlayerId;
-        selectedHoujuPlayerId = HoujuPlayerId;
         dropdownAgariPlayer.value = AgariPlayerId;
-        dropdownHoujuPlayer.value = HoujuPlayerId;
 
         hanNum = 0; // 1ハン
         fuNum = 2;  // 30符
-        isOya = false;
+
+        if (AgariPlayerId == haifu.oyaId)
+        {
+            isOya = true;
+        }
+        else
+        {
+            isOya  = false;
+        }
+
         SetValueToHansuuFuDropdown();
 
         // 供託、本場、リーチ棒の初期化 // haifuを参照して初期化する予定
@@ -85,29 +89,6 @@ public class AgariController : MonoBehaviour
         logMessager = new LogMessager();
     }
     
-
-    // ポイントボタン
-    public void OnPushPointButton(int Point)
-    {
-        logMessager = new LogMessager();
-        logMessager.LogY(Point.ToString());
-        //AllPointButtonOff();
-
-        onPushPoint = Point;
-        CulcPointShift();
-
-    }
-
-    //  全てのボタンを初期化
-    public void AllPointButtonOff()
-    {
-        for(int i = 0; i < pointButtons.Count; i++)
-        {
-            GameObject buttonPoint = pointButtons[i];
-            ShapeController shapeController = buttonPoint.GetComponent<ShapeController>();
-            shapeController.offButtonShapeChange();
-        }
-    }
 
     //-----------------------------------------------------
     //
@@ -135,7 +116,7 @@ public class AgariController : MonoBehaviour
     private string MakePointShiftKey()
     {
         string c_p = "C";
-        string r_t = "R";
+        string r_t = "T";   // ツモあがり
         string _han_st = (hanNum + 1).ToString();
         string _fu_st = fuId2FuNum[fuNum].ToString();
         string _key;
@@ -196,10 +177,6 @@ public class AgariController : MonoBehaviour
 
     private void CulcPointShift()
     {
-        if (selectedAgariPlayerId == selectedHoujuPlayerId) // あがり==放銃の場合は計算しない
-        {
-            return;
-        }
 
         string key = MakePointShiftKey();
         if (key == "")
@@ -208,16 +185,43 @@ public class AgariController : MonoBehaviour
         }
 
         pointShift = new List<int>() {0, 0, 0, 0};
+        List<int> tumorarePlayerIds = new List<int>();
 
-        int ronPoint = csvData.pointDict[key][0];
+        for(int i = 1; i < 4; i++)
+        {
+            tumorarePlayerIds.Add((selectedAgariPlayerId + i) % 4);
+        }
+
+        int tumoPoint1 = csvData.pointDict[key][0];
+        int tumoPoint2 = csvData.pointDict[key][1];
 
         // あがりの点数
-        pointShift[selectedAgariPlayerId] += ronPoint;
-        pointShift[selectedHoujuPlayerId] -= ronPoint;
+        if (isOya)
+        {
+            pointShift[selectedAgariPlayerId] += tumoPoint1 * 3;
+            foreach(int pid in tumorarePlayerIds)
+            {
+                pointShift[pid] -= tumoPoint1;
+            }
+        }
+        else
+        {
+            int oyaId = haifu.oyaId;
+            pointShift[selectedAgariPlayerId] += tumoPoint1 + (tumoPoint2) * 2;
+            foreach(int pid in tumorarePlayerIds)
+            {
+                pointShift[pid] -= tumoPoint2;
+            }
+            pointShift[oyaId] += tumoPoint2;   // 親だけは子の分はプラスで戻して親の分を追加で引く
+            pointShift[oyaId] -= tumoPoint1;
+        }
 
         // 本場
         pointShift[selectedAgariPlayerId] += honba * 300;
-        pointShift[selectedHoujuPlayerId] -= honba * 300;
+        foreach(int pid in  tumorarePlayerIds)
+        {
+            pointShift[pid] -= honba * 100;
+        }
 
         // 供託
         pointShift[selectedAgariPlayerId] += kyoutaku * 1000;
@@ -271,34 +275,32 @@ public class AgariController : MonoBehaviour
     //-----------------------------------------------------
 
     public Dropdown dropdownAgariPlayer;
-    public Dropdown dropdownHoujuPlayer;
 
     private List<string> agariPlayerOptionlist = new List<string>();
-    private List<string> houjuPlayerOptionlist = new List<string>();
 
     private void InitDropdown()
     {
         dropdownAgariPlayer.ClearOptions();
-        dropdownHoujuPlayer.ClearOptions();
 
         int i =0;
         List<string> kaze = new List<string>() {"東", "南", "西", "北"};
         foreach (string playerName in haifu.playerNames)
         {
             agariPlayerOptionlist.Add("["+ kaze[i] + "] " + playerName);
-            houjuPlayerOptionlist.Add("["+ kaze[i] + "] " + playerName);
             i++;
         }
 
         dropdownAgariPlayer.AddOptions(agariPlayerOptionlist);
-        dropdownHoujuPlayer.AddOptions(houjuPlayerOptionlist);
 
     }
 
     public void ClickDropdown()
     {
         selectedAgariPlayerId = dropdownAgariPlayer.value;
-        selectedHoujuPlayerId = dropdownHoujuPlayer.value;
+        if (selectedAgariPlayerId == haifu.oyaId)
+        {
+            isOya = true;
+        }
         CulcPointShift();
     }
 
@@ -419,10 +421,9 @@ public class AgariController : MonoBehaviour
     {
 
         selectedAgariPlayerId = dropdownAgariPlayer.value;
-        selectedHoujuPlayerId = dropdownHoujuPlayer.value;
 
-        // finishType ロン
-        haifu.finishType = 1;
+        // finishType ツモ
+        haifu.finishType = 2;
         
         // 本場と供託をhaifuに追加  // ゲーム中に変わらないはず
         haifu.honba = this.honba;
@@ -437,18 +438,14 @@ public class AgariController : MonoBehaviour
             fu_str = dropdownFu.options[fuNum].text;
         }
 
-        haifu.finishTitle = fu_str + dropdownHansuu.options[hanNum].text + csvData.pointDict[_key][0].ToString() + "点";
+        haifu.finishTitle = fu_str + dropdownHansuu.options[hanNum].text + csvData.pointDict[_key][0].ToString() + "点∀";
 
         taikyokuManager.CreateOutputData();
     }
 
 
-    //----------------------------------------
-    //
-    //            ツモあがり
-    //
-    //----------------------------------------
 
 
 
 }
+

@@ -41,7 +41,15 @@ public class CreateHaifuUrl : MonoBehaviour
                 finish_str = "[" + finishType_str + "," + finishPointShift_str + "]";
                 break;
 
-            case 1:
+            case 1:  // ロン
+                finishType_str = "\"和了\"";
+                finishPointShift = new List<int>(haifuData.pointShift);
+                finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
+                finish_other_str = "[3,3,3,\"" + finish_title_str + "\"]";
+                finish_str = "[" + finishType_str + "," + finishPointShift_str + "," + finish_other_str + "]";
+                break;
+            
+            case 2:  // ツモ
                 finishType_str = "\"和了\"";
                 finishPointShift = new List<int>(haifuData.pointShift);
                 finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
@@ -133,7 +141,7 @@ public class CreateHaifuUrl : MonoBehaviour
             }
 
             // 打牌の登録
-            if (turn.dahaiActionType == "Normal")
+            if (turn.dahaiActionType == "Normal" || turn.dahaiActionType == "Tumo_finish")
             {
                 dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));
             }

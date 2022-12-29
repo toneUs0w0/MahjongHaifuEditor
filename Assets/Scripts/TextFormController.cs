@@ -120,6 +120,7 @@ public class TextFormController : MonoBehaviour
         haifu.kyoku = kyokuNum;
         haifu.honba = honbaNum;
         haifu.kyoutaku = kyotakuNum;
+        haifu.oyaId = oyaId;
 
         // このへんはもっと大枠のclassが必要な気がする
         systemManager.Form2Haipaisetting();
@@ -147,6 +148,7 @@ public class TextFormController : MonoBehaviour
     private void ShowOyaIcon()
     {
         oyaId = kyokuNum % 4;
+        haifu.oyaId = oyaId;
 
         foreach(GameObject gmOyaIcon in GmOyaIcons)
         {

@@ -86,14 +86,6 @@ public class TaikyokuManager : MonoBehaviour
         ShowRyukyokuButton(false);
     }
 
-    // １ターン目のプレイヤー名と対局名が表示されない(Set関数がstart以降呼ばれない)問題のため今だけ置いている
-    // 最終的には編集ボタンが押されたinitializeをsystemmanagerに記述するべき？
-    //void Update()
-   //{
-        //SetTaikyokuName();
-        //SetPlayerName();
-    //}
-
     // startではなく対局編集が開始されるたびに呼び出す初期化
     public void InitTaikyokuView()
     {
@@ -345,11 +337,20 @@ public class TaikyokuManager : MonoBehaviour
             {
                 dahai_action_type = "Ankan"; // 副露牌の作成はcreateHaifuUrlにパス
             }
+            if (onTumo)
+            {
+                dahai_action_type = "Tumo_finish";
+                turn = AddTrun2Haifu(PlayerId: turn_palyer_id, TumoHaiId: tumo_hai_id, DahaiId: dahai_id, Action: action_type, DahaiAction: dahai_action_type, HuroHaiId: huro_hai_id);
+                ShowNakiPanel(false); // パネルを閉じる
+                ShowTumoFinishGameEditPanel(true, AgariPlayerId:turn_palyer_id);
+                return;
+                
+            }
 
             turn = AddTrun2Haifu(PlayerId: turn_palyer_id, TumoHaiId: tumo_hai_id, DahaiId: dahai_id, Action: action_type, DahaiAction: dahai_action_type, HuroHaiId: huro_hai_id);
             CreateTurnLog(turn);
 
-            PrepareNextHaifuInput();           
+            PrepareNextHaifuInput();   
    
         }
     }
@@ -511,6 +512,7 @@ public class TaikyokuManager : MonoBehaviour
         ShowDaiminkanPanel(false);
         ShowNakiFirstPanel(false);
         ShowRonFinishGameEditPanel(false);
+        ShowTumoFinishGameEditPanel(false);
         ShowHaiNotInTehaiDialog(HaiId:0, show:false);
     }
 
@@ -527,6 +529,8 @@ public class TaikyokuManager : MonoBehaviour
             ShowNakiFirstPanel(false);
             ShowDaiminkanPanel(false);
             ShowRonPanel(false);
+            ShowRonFinishGameEditPanel(false);
+            ShowTumoFinishGameEditPanel(false);
             ShowHaiNotInTehaiDialog(HaiId:0, show:false);
         }
 
@@ -911,7 +915,7 @@ public class TaikyokuManager : MonoBehaviour
         }
         else if (onTumo)
         {
-            frameText.text = "ツモあがり";
+            frameTextDahai.text = "ツモあがり";
             return;
         }
         else if (onAnkan)
@@ -988,6 +992,27 @@ public class TaikyokuManager : MonoBehaviour
         }
         DahaiModeSelectButtonShapeChanger();
         FrameTextSettingDahai();
+    }
+
+    // - - - - - - - - - - - - - - - - - - - -
+    //                   ツモ
+    // - - - - - - - - - - - - - - - - - - - - 
+    // ツモボタン
+    public GameObject panelFinishGameTumoEditing;
+
+
+    private void ShowTumoFinishGameEditPanel(bool show, int AgariPlayerId = 0)
+    {
+        if(show)
+        {
+            panelFinishGameTumoEditing.SetActive(true);
+            CollAgariController coller = panelFinishGameTumoEditing.GetComponent<CollAgariController>();
+            coller.CollInitController(AgariPlayerId, 0, mode:1);
+        }
+        else
+        {
+            panelFinishGameTumoEditing.SetActive(false);
+        }
     }
 
 

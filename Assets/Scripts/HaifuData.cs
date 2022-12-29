@@ -21,6 +21,7 @@ public class HaifuData : MonoBehaviour
     public int kyoku;
     public int honba;
     public int kyoutaku;
+    public int oyaId;
 
     public int finishType;  //0:流局 1:ロン
     public List<int> pointShift;
