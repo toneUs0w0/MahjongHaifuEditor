@@ -59,7 +59,6 @@ public class TumoAgariController : MonoBehaviour
     public void InitAgariControllerTumo(int AgariPlayerId)
     {
         InitFuDic();
-
         InitPointShiftView();
         InitDropdown();
 
@@ -79,7 +78,6 @@ public class TumoAgariController : MonoBehaviour
             isOya  = false;
         }
 
-        SetValueToHansuuFuDropdown();
         SetFuOption();
 
         // 供託、本場、リーチ棒の初期化 // haifuを参照して初期化する予定
@@ -128,9 +126,11 @@ public class TumoAgariController : MonoBehaviour
     public void ClickHansuuDropdown()
     {
         hanNum = dropdownHansuu.value;
-        dropdownFu.value = 0;  // 符については仕切り直し
-        fuNum = 0;
         SetFuOption();  //  符の項目を絞る
+        dropdownFu.value = 0;  // 符については仕切り直し
+        string _st = dropdownFu.options[0].text;  // fuのdropdownの最初の項目を取得
+        fuNum = fuStr2fuId[_st];
+
         CulcPointShift();
     }
 
@@ -138,6 +138,8 @@ public class TumoAgariController : MonoBehaviour
     {
         string selectedFuString = dropdownFu.options[dropdownFu.value].text;
         fuNum = fuStr2fuId[selectedFuString];
+        print(selectedFuString);
+        print(fuNum.ToString());
 
         CulcPointShift();
     }
@@ -161,7 +163,7 @@ public class TumoAgariController : MonoBehaviour
             switch (hanNum)
             {
                 case 1:
-                    _hansuuOptionInt = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11};
+                    _hansuuOptionInt = new List<int>() {3, 4, 5, 6, 7, 8, 9, 10, 11};
                     break;
                 case 2:
                     _hansuuOptionInt = new List<int>() {1, 3, 4, 5, 6, 7, 8, 9, 10, 11};
@@ -256,6 +258,27 @@ public class TumoAgariController : MonoBehaviour
         {
             textPlayerBoxName[i].text = haifu.playerNames[i];
         }
+
+        pointShift = new List<int>() {0, 0, 0, 0};  // 後で変更予定
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (pointShift[i] == 0)
+            {
+                textPlayerBoxPointShift[i].text = "";
+            }
+            else if (pointShift[i] > 0)
+            {
+                textPlayerBoxPointShift[i].text = "+ " + pointShift[i].ToString();;
+                textPlayerBoxPointShift[i].color = new Color(0.0f, 1.0f, 0.0f, 1.0f);
+            }
+            else
+            {
+                textPlayerBoxPointShift[i].text = "- " + (pointShift[i] * -1 ).ToString();;
+                textPlayerBoxPointShift[i].color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
+            }
+        }
+
     }
 
     private void CulcPointShift()
