@@ -44,13 +44,22 @@ public class TumoAgariController : MonoBehaviour
     private bool reachPlayer4;
 
     // fuNumの変換用
-    private List<int> fuId2FuNum = new List<int>() {20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110};
+    private List<int> fuId2FuNum = new List<int>() {0, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110};
 
+    private List<string> hansuuOptionList = new List<string>() {"-test-翻", "1翻", "2翻", "3翻", "4翻", "満貫", 
+                                                                    "跳満", "倍満", "役満", "2倍役満", 
+                                                                    "3倍役満", "4倍役満",  "5倍役満"};
+
+    private List<string> fuOptionList = new List<string>() {"-test符", "20符", "25符", "30符", "40符", "50符", "60符",
+                                                                "70符", "80符", "90符", "100符", "110符"};
+    private Dictionary<string, int> fuStr2fuId = new Dictionary<string, int>();
     private LogMessager logMessager;
 
     //  初期処理
     public void InitAgariControllerTumo(int AgariPlayerId)
     {
+        InitFuDic();
+
         InitPointShiftView();
         InitDropdown();
 
@@ -58,8 +67,8 @@ public class TumoAgariController : MonoBehaviour
         selectedAgariPlayerId = AgariPlayerId;
         dropdownAgariPlayer.value = AgariPlayerId;
 
-        hanNum = 0; // 1ハン
-        fuNum = 2;  // 30符
+        hanNum = 0;  // できれば手牌から予想したい
+        fuNum = 0;  // できれば手牌から予想したい
 
         if (AgariPlayerId == haifu.oyaId)
         {
@@ -71,6 +80,7 @@ public class TumoAgariController : MonoBehaviour
         }
 
         SetValueToHansuuFuDropdown();
+        SetFuOption();
 
         // 供託、本場、リーチ棒の初期化 // haifuを参照して初期化する予定
         honba = haifu.honba;
@@ -88,16 +98,26 @@ public class TumoAgariController : MonoBehaviour
         // ログ
         logMessager = new LogMessager();
     }
+
+    //  符のdropdownのための辞書作成
+    private void InitFuDic()
+    {
+        for(int  i = 0;  i < fuOptionList.Count; i++)
+        {
+            fuStr2fuId.Add(fuOptionList[i], i);
+        }
+    }
     
 
     //-----------------------------------------------------
     //
-    //                移動点数
+    //                ハンと符のdropdown
     //
     //-----------------------------------------------------
 
     public Dropdown dropdownHansuu;
     public Dropdown dropdownFu;
+    public GameObject goDropdownFu;
 
     private void SetValueToHansuuFuDropdown()
     {
@@ -105,19 +125,82 @@ public class TumoAgariController : MonoBehaviour
         dropdownFu.value = fuNum;
     }
 
-    public void ClickHansuuFuDropdown()
+    public void ClickHansuuDropdown()
     {
         hanNum = dropdownHansuu.value;
-        fuNum = dropdownFu.value;
+        dropdownFu.value = 0;  // 符については仕切り直し
+        fuNum = 0;
+        SetFuOption();  //  符の項目を絞る
         CulcPointShift();
     }
+
+    public void ClickFuDropdown()
+    {
+        string selectedFuString = dropdownFu.options[dropdownFu.value].text;
+        fuNum = fuStr2fuId[selectedFuString];
+
+        CulcPointShift();
+    }
+
+    // 選択可能なoptionのみを表示
+    private void SetFuOption()
+    {
+        List<int> _hansuuOptionInt = new List<int>();
+        List<string> _hansuuOption = new List<string>();
+
+
+        // ハンを設定していない時と満貫以上の時はそもそも符を表示しない
+        if (hanNum == 0 || hanNum > 5 )
+        {
+            ShowFuDropdown(false);
+        }
+        else
+        {
+            ShowFuDropdown(true);
+            dropdownFu.ClearOptions();
+            switch (hanNum)
+            {
+                case 1:
+                    _hansuuOptionInt = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11};
+                    break;
+                case 2:
+                    _hansuuOptionInt = new List<int>() {1, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+                    break;
+                case 3:
+                    _hansuuOptionInt = new List<int>() {1, 2, 3, 4, 5, 6};
+                    break;
+                case 4:
+                    _hansuuOptionInt = new List<int>() {1, 2, 3};
+                    break;
+                default:
+                    break;
+            }
+            for (int i = 0; i < _hansuuOptionInt.Count; i++)
+            {
+                 _hansuuOption.Add(fuOptionList[_hansuuOptionInt[i]]);
+            }
+            dropdownFu.AddOptions( _hansuuOption);
+        }
+        
+    }
+
+    private void ShowFuDropdown(bool Show)
+    {
+        goDropdownFu.SetActive(Show);
+    }
+
+    //-----------------------------------------------------
+    //
+    //                移動点数
+    //
+    //-----------------------------------------------------
     
     // csvから読み取った辞書のkeyを返す // 辞書にないなら空文字列を返却
     private string MakePointShiftKey()
     {
         string c_p = "C";
         string r_t = "T";   // ツモあがり
-        string _han_st = (hanNum + 1).ToString();
+        string _han_st = (hanNum).ToString();
         string _fu_st = fuId2FuNum[fuNum].ToString();
         string _key;
 
@@ -143,7 +226,7 @@ public class TumoAgariController : MonoBehaviour
 
         if (csvData.pointDict.ContainsKey(_key))
         {
-            //logMessager.LogY( _key + " is exist in pointDict.");
+            logMessager.LogY("SEARCH : " + _key );
             return _key;
         }
         else
@@ -192,8 +275,8 @@ public class TumoAgariController : MonoBehaviour
             tumorarePlayerIds.Add((selectedAgariPlayerId + i) % 4);
         }
 
-        int tumoPoint1 = csvData.pointDict[key][0];
-        int tumoPoint2 = csvData.pointDict[key][1];
+        int tumoPoint1 = csvData.pointDict[key][0]; // 子の支払い
+        int tumoPoint2 = csvData.pointDict[key][1]; // 親の支払い
 
         // あがりの点数
         if (isOya)
@@ -207,13 +290,13 @@ public class TumoAgariController : MonoBehaviour
         else
         {
             int oyaId = haifu.oyaId;
-            pointShift[selectedAgariPlayerId] += tumoPoint1 + (tumoPoint2) * 2;
+            pointShift[selectedAgariPlayerId] += tumoPoint2 + (tumoPoint1) * 2 ;
             foreach(int pid in tumorarePlayerIds)
             {
-                pointShift[pid] -= tumoPoint2;
+                pointShift[pid] -= tumoPoint1;
             }
-            pointShift[oyaId] += tumoPoint2;   // 親だけは子の分はプラスで戻して親の分を追加で引く
-            pointShift[oyaId] -= tumoPoint1;
+            pointShift[oyaId] += tumoPoint1;   // 親だけは子の分はプラスで戻して親の分を追加で引く
+            pointShift[oyaId] -= tumoPoint2;
         }
 
         // 本場
@@ -300,6 +383,10 @@ public class TumoAgariController : MonoBehaviour
         if (selectedAgariPlayerId == haifu.oyaId)
         {
             isOya = true;
+        }
+        else
+        {
+            isOya = false;   
         }
         CulcPointShift();
     }
@@ -437,9 +524,16 @@ public class TumoAgariController : MonoBehaviour
         {
             fu_str = dropdownFu.options[fuNum].text;
         }
+        if (isOya) // oyatumo
+        {
+            haifu.finishTitle = fu_str + dropdownHansuu.options[hanNum].text + csvData.pointDict[_key][0].ToString() + "点∀";
 
-        haifu.finishTitle = fu_str + dropdownHansuu.options[hanNum].text + csvData.pointDict[_key][0].ToString() + "点∀";
-
+        }
+        else  //kotumo
+        {
+            haifu.finishTitle = fu_str + dropdownHansuu.options[hanNum].text + csvData.pointDict[_key][0].ToString() + "-" + csvData.pointDict[_key][1].ToString() + "点";
+        }
+       
         taikyokuManager.CreateOutputData();
     }
 
