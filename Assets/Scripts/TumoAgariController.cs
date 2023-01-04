@@ -128,8 +128,16 @@ public class TumoAgariController : MonoBehaviour
         hanNum = dropdownHansuu.value;
         SetFuOption();  //  符の項目を絞る
         dropdownFu.value = 0;  // 符については仕切り直し
-        string _st = dropdownFu.options[0].text;  // fuのdropdownの最初の項目を取得
-        fuNum = fuStr2fuId[_st];
+        if (dropdownFu.options.Count > 0)   // 場合によっては符のドロップアウトの要素がないこともあるので (満貫以上とか)
+        {
+            string _st = dropdownFu.options[0].text;  // fuのdropdownの最初の項目を取得
+            fuNum = fuStr2fuId[_st];
+        }
+        else
+        {
+            fuNum = 0;
+        }
+
 
         CulcPointShift();
     }
@@ -138,8 +146,6 @@ public class TumoAgariController : MonoBehaviour
     {
         string selectedFuString = dropdownFu.options[dropdownFu.value].text;
         fuNum = fuStr2fuId[selectedFuString];
-        print(selectedFuString);
-        print(fuNum.ToString());
 
         CulcPointShift();
     }
@@ -152,7 +158,7 @@ public class TumoAgariController : MonoBehaviour
 
 
         // ハンを設定していない時と満貫以上の時はそもそも符を表示しない
-        if (hanNum == 0 || hanNum > 5 )
+        if (hanNum == 0 || hanNum > 4 )
         {
             ShowFuDropdown(false);
         }
