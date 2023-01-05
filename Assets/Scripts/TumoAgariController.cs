@@ -567,6 +567,23 @@ public class TumoAgariController : MonoBehaviour
     }
 
 
+    //-----------------------------------------------------
+    //
+    //                ドラ指定
+    //
+    //-----------------------------------------------------
+
+    public GameObject doraSelectPanel;
+    public List<Image> imageDora;
+
+    public int selectedDoraImageId; // 0-7
+
+    private void ShowDoraSelectPanel(bool Show)
+    {
+        doraSelectPanel.SetActive(Show);
+    }
+
+
 
 
 
