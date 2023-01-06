@@ -53,8 +53,8 @@ public class HaifuData : MonoBehaviour
         }
 
         // ドラの初期化
-        List<int> dora = new List<int>();
-        List<int> uradora = new List<int>();
+        dora = new List<int>() {0, 0, 0, 0};
+        uradora = new List<int>() {0, 0, 0, 0};
 
         // 持ち点とポイントシフトの初期化
         this.mochiten = new List<int>();

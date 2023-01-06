@@ -16,6 +16,12 @@ public class ShapeController : MonoBehaviour
     // black
     private int black = 0;
 
+    //haibutton
+    private Color haiButtonFrameColor = new Color(152, 152, 152, 255);
+    private Color haiButtonFillColor = new Color(0, 0, 0, 0);
+
+    private Color haiButtonSelectedColor = new Color(152, 152, 152, 255);
+
 
     public void onButtonShapeChange()
     {
@@ -43,5 +49,18 @@ public class ShapeController : MonoBehaviour
 
     }
     
+    public void haiButtonInitColor()
+    {
+        Shapes2D.Shape shape = GetComponent<Shapes2D.Shape>();
+        shape.settings.fillColor = haiButtonFillColor;
+        shape.settings.outlineColor = haiButtonFrameColor;
+    }
+
+    public void haiButtonSelectedColorChange()
+    {
+        Shapes2D.Shape shape = GetComponent<Shapes2D.Shape>();
+        shape.settings.fillColor = haiButtonSelectedColor;
+        shape.settings.outlineColor = haiButtonFrameColor;
+    }
 
 }

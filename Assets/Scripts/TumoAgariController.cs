@@ -29,6 +29,7 @@ public class TumoAgariController : MonoBehaviour
     public List<Text> textPlayerBoxPointShift;
 
     public HaifuData haifu;
+    public List<Image> imageDoraOriginal; // ドラ選択画面の方と区別
 
 
     private List<int> pointShift;
@@ -42,6 +43,7 @@ public class TumoAgariController : MonoBehaviour
     private bool reachPlayer2;
     private bool reachPlayer3;
     private bool reachPlayer4;
+
 
     // fuNumの変換用
     private List<int> fuId2FuNum = new List<int>() {0, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110};
@@ -91,6 +93,9 @@ public class TumoAgariController : MonoBehaviour
 
         textHonbaNum.text = honba.ToString();  // 本場の初期後に表示する
         textKyoutakuNum.text = kyoutaku.ToString();
+
+        InitDoraSelectPanel();
+        ShowDoraSelectPanel(false);
 
 
         // ログ
@@ -574,14 +579,118 @@ public class TumoAgariController : MonoBehaviour
     //-----------------------------------------------------
 
     public GameObject doraSelectPanel;
+    public List<ShapeController> shapeControllerDoras;
     public List<Image> imageDora;
 
-    public int selectedDoraImageId; // 0-7
+    private List<HaiEntity> haiEnts = new List<HaiEntity>();
 
-    private void ShowDoraSelectPanel(bool Show)
+    private int selectedDoraImageId; // 0-7
+    public List<int> selectedDoraIds;
+
+    public void InitDoraSelectPanel()
+    {
+        selectedDoraImageId = 0; // ゲーム開始時に指定していない場合は0スタート
+
+        selectedDoraIds = new List<int>();
+        for (int i  = 0; i < 8; i++)
+        {
+            selectedDoraIds.Add(0);
+        }
+    
+        List<string> index2id = new List<string>() {"none", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m5r", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p5r", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s5r", "j1", "j2", "j3", "j4", "j5", "j6", "j7"};
+
+        //haiEntityのリストをロード
+        for (int n = 0; n < index2id.Count; n++)
+        {
+            HaiEntity haiEnt = (HaiEntity)Resources.Load("Hai/" + index2id[n]);
+            haiEnts.Add(haiEnt);
+        }
+
+        ShowDoraPanelSelectFrame();
+        DoraImageSetting();
+
+    }
+
+    public void ShowDoraSelectPanel(bool Show)
     {
         doraSelectPanel.SetActive(Show);
     }
+
+
+    private void ShowDoraPanelSelectFrame()
+    {
+        foreach(ShapeController sc in shapeControllerDoras)
+        {
+            sc.haiButtonInitColor();
+        }
+        shapeControllerDoras[selectedDoraImageId].haiButtonSelectedColorChange();
+    }
+
+
+    public void PushDoraSelect(int DoraImageId)
+    {
+        selectedDoraImageId = DoraImageId;
+        ShowDoraPanelSelectFrame();
+    }
+
+
+    public void PushHaiButtonForDoraSelect(int HaiId)
+    {
+        if (selectedDoraIds.Count != 8)
+        {
+            logMessager = new LogMessager();
+            logMessager.LogR("selectedDoraIds.Count is not 8. ");
+            return;
+        }
+        selectedDoraIds[selectedDoraImageId] = HaiId;
+        DoraImageSetting();
+
+    }
+    
+
+    // ドラ選択画面下部のドラimageに現在選択されている牌imageを挿入
+    private void DoraImageSetting()
+    {
+        for(int i = 0; i < 8; i++)
+        {
+            imageDora[i].sprite = haiEnts[selectedDoraIds[i]].haiSprite;
+        }
+    }
+
+    // ドラ選択パネルの戻るボタン
+    public void ReturnFromDoraSelectPanel()
+    {
+        ShowDoraSelectPanel(false);
+        SetDoraIdToHaifuData();
+        OriginalDoraImageSetting();
+    }
+
+    // ドラ選択パネルでの結果を牌譜にパス
+    private void SetDoraIdToHaifuData()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            haifu.dora[i] = selectedDoraIds[i];
+        }
+        for (int i = 4; i < 8; i++)
+        {
+            haifu.uradora[i-4] = selectedDoraIds[i];
+        }
+    }
+
+    // 元のパネルにドラのimageを挿入
+    private void OriginalDoraImageSetting()
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            imageDoraOriginal[i].sprite = haiEnts[haifu.dora[i]].haiSprite;
+        }
+        for(int i = 4; i < 8; i++)
+        {
+            imageDoraOriginal[i].sprite = haiEnts[haifu.uradora[i-4]].haiSprite;
+        }
+    }
+
 
 
 
