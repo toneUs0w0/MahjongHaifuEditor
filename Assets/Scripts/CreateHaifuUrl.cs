@@ -11,11 +11,10 @@ public class CreateHaifuUrl : MonoBehaviour
         string title_str = "\"title\":[\"" + haifuData.taikyokuName + "\",\"" + haifuData.taikyokuSubTitle + "\"]";
         string player_str = "\"name\":[\"" + haifuData.playerNames[0] + "\",\"" + haifuData.playerNames[1] + "\",\"" + haifuData.playerNames[2] + "\",\"" + haifuData.playerNames[3] + "\"]";
         string rule_str = "\"rule\":{\"aka\":0}";
-        string honba_str = "[" + "0" + "," + haifuData.honba.ToString() + "," + haifuData.kyoutaku.ToString() + "]";
+        string honba_str = "[" + haifuData.kyoku.ToString() + "," + haifuData.honba.ToString() + "," + haifuData.kyoutaku.ToString() + "]";
         string mochiten_str = "[" + haifuData.mochiten[0] + "," + haifuData.mochiten[1] + "," + haifuData.mochiten[2] + "," + haifuData.mochiten[3] + "]";
-        //string dora_str = "[" + string.Join(",", haifuData.dora) + "]";
-        string dora_str = "[" + "46" + "]";
-        string uradora_str = "[" + string.Join(",", haifuData.uradora) + "]";
+        string dora_str = "[" + makeDoraString() + "]";
+        string uradora_str = "[" + makeUradoraString() + "]";
         List<string> haipai_str_list = new List<string>();
         List<List<List<string>>> tumo_dahai_str_list = new List<List<List<string>>>(DevideTurnData());
         string finish_str = "";
@@ -31,6 +30,7 @@ public class CreateHaifuUrl : MonoBehaviour
         List<int> finishPointShift = new List<int>();
         string finishPointShift_str = "";
         string finish_other_str = "";
+        string finish_title_str = haifuData.finishTitle;
         switch (haifuData.finishType)
         {
             case 0:
@@ -40,11 +40,19 @@ public class CreateHaifuUrl : MonoBehaviour
                 finish_str = "[" + finishType_str + "," + finishPointShift_str + "]";
                 break;
 
-            case 1:
+            case 1:  // ロン
                 finishType_str = "\"和了\"";
                 finishPointShift = new List<int>(haifuData.pointShift);
                 finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
-                finish_other_str = "[3,3,3,\"30符3飜2000点∀\"]";
+                finish_other_str = "[3,3,3,\"" + finish_title_str + "\"]";
+                finish_str = "[" + finishType_str + "," + finishPointShift_str + "," + finish_other_str + "]";
+                break;
+            
+            case 2:  // ツモ
+                finishType_str = "\"和了\"";
+                finishPointShift = new List<int>(haifuData.pointShift);
+                finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
+                finish_other_str = "[3,3,3,\"" + finish_title_str + "\"]";
                 finish_str = "[" + finishType_str + "," + finishPointShift_str + "," + finish_other_str + "]";
                 break;
             
@@ -132,7 +140,7 @@ public class CreateHaifuUrl : MonoBehaviour
             }
 
             // 打牌の登録
-            if (turn.dahaiActionType == "Normal")
+            if (turn.dahaiActionType == "Normal" || turn.dahaiActionType == "Tumo_finish")
             {
                 dahais[turn.playerId].Add(HaiId2TenhouHaiIdStr(turn.dahaiId));
             }
@@ -158,6 +166,35 @@ public class CreateHaifuUrl : MonoBehaviour
     {
         string haiId_str = HaiId2TenhouHaiIdStr(HaiId);
         return "\"" + haiId_str + haiId_str + haiId_str + "a" + haiId_str + "\"";
+    }
+
+    // ドラの文字列作成
+    private string makeDoraString()
+    {
+        
+        List<string> rtn_dora_string_list = new List<string>();
+        foreach(int DoraId in haifuData.dora)
+        {
+            if(DoraId != 0)
+            {
+                rtn_dora_string_list.Add(HaiId2TenhouHaiIdStr(DoraId));
+            }
+        }
+        return string.Join(",", rtn_dora_string_list);
+    }
+
+    // 裏ドラの文字列作成
+    private string makeUradoraString()
+    {
+        List<string> rtn_uradora_string_list = new List<string>();;
+        foreach(int UraId in haifuData.uradora)
+        {
+            if(UraId != 0)
+            {
+                rtn_uradora_string_list.Add(HaiId2TenhouHaiIdStr(UraId));
+            }
+        }
+        return string.Join(",", rtn_uradora_string_list);
     }
 
 }

@@ -5,8 +5,17 @@ using UnityEngine.UI;
 
 public class AgariController : MonoBehaviour
 {
+    //----------------------------------------
+    //
+    //            ロンあがり
+    //
+    //----------------------------------------
+
+
     // inspectorから数値ボタンを登録
     public TaikyokuManager taikyokuManager;
+    public CSVReader csvData;
+
     public List<GameObject> pointButtons;
     public Text textKyoutakuNum;
     public Text textHonbaNum;
@@ -25,6 +34,9 @@ public class AgariController : MonoBehaviour
     private List<int> pointShift;
     private int selectedAgariPlayerId;
     private int selectedHoujuPlayerId;
+    private int hanNum; // 0-12
+    private int fuNum; // 0-10
+    private bool isOya;
     private int honba;
     private int kyoutaku;
     private bool reachPlayer1;
@@ -32,11 +44,13 @@ public class AgariController : MonoBehaviour
     private bool reachPlayer3;
     private bool reachPlayer4;
 
+    // fuNumの変換用
+    private List<int> fuId2FuNum = new List<int>() {20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110};
 
     private LogMessager logMessager;
 
     //  初期処理
-    public void InitAgariController(int AgariPlayerId, int HoujuPlayerId)
+    public void InitAgariControllerRon(int AgariPlayerId, int HoujuPlayerId)
     {
         AllPointButtonOff();
         InitPointShiftView();
@@ -49,13 +63,22 @@ public class AgariController : MonoBehaviour
         dropdownAgariPlayer.value = AgariPlayerId;
         dropdownHoujuPlayer.value = HoujuPlayerId;
 
+        hanNum = 0; // 1ハン
+        fuNum = 2;  // 30符
+        isOya = false;
+        SetValueToHansuuFuDropdown();
+
         // 供託、本場、リーチ棒の初期化 // haifuを参照して初期化する予定
-        honba = 0;
-        kyoutaku = 0;
+        honba = haifu.honba;
+        kyoutaku = haifu.kyoutaku;
         reachPlayer1 = false;
         reachPlayer2 = false;
         reachPlayer3 = false;
         reachPlayer4 = false;
+
+
+        textHonbaNum.text = honba.ToString();  // 本場の初期後に表示する
+        textKyoutakuNum.text = kyoutaku.ToString();
 
 
         // ログ
@@ -88,6 +111,73 @@ public class AgariController : MonoBehaviour
 
     //-----------------------------------------------------
     //
+    //                移動点数
+    //
+    //-----------------------------------------------------
+
+    public Dropdown dropdownHansuu;
+    public Dropdown dropdownFu;
+
+    private void SetValueToHansuuFuDropdown()
+    {
+        dropdownHansuu.value = hanNum;
+        dropdownFu.value = fuNum;
+    }
+
+    public void ClickHansuuFuDropdown()
+    {
+        hanNum = dropdownHansuu.value;
+        fuNum = dropdownFu.value;
+        CulcPointShift();
+    }
+    
+    // csvから読み取った辞書のkeyを返す // 辞書にないなら空文字列を返却
+    private string MakePointShiftKey()
+    {
+        string c_p = "C";
+        string r_t = "R";
+        string _han_st = (hanNum + 1).ToString();
+        string _fu_st = fuId2FuNum[fuNum].ToString();
+        string _key;
+
+        if(isOya)
+        {
+            c_p = "P";
+        }
+        else
+        {
+            c_p = "C";
+        }
+
+        if(hanNum > 3)  //満貫以上なら符は0
+        {
+            _fu_st = "0";
+        }
+
+        _key = c_p + "_" + r_t + "_" + _han_st + "_" + _fu_st;  // keyを作成
+
+        //print(_key);
+
+        logMessager = new LogMessager();
+
+        if (csvData.pointDict.ContainsKey(_key))
+        {
+            //logMessager.LogY( _key + " is exist in pointDict.");
+            return _key;
+        }
+        else
+        {
+            logMessager.LogR( _key + " is Not exist in pointDict.");
+            return "";
+        }
+
+        
+    }
+
+
+
+    //-----------------------------------------------------
+    //
     //                点棒移動表示
     //
     //-----------------------------------------------------
@@ -111,11 +201,19 @@ public class AgariController : MonoBehaviour
             return;
         }
 
+        string key = MakePointShiftKey();
+        if (key == "")
+        {
+            return;
+        }
+
         pointShift = new List<int>() {0, 0, 0, 0};
 
+        int ronPoint = csvData.pointDict[key][0];
+
         // あがりの点数
-        pointShift[selectedAgariPlayerId] += onPushPoint;
-        pointShift[selectedHoujuPlayerId] -= onPushPoint;
+        pointShift[selectedAgariPlayerId] += ronPoint;
+        pointShift[selectedHoujuPlayerId] -= ronPoint;
 
         // 本場
         pointShift[selectedAgariPlayerId] += honba * 300;
@@ -332,8 +430,24 @@ public class AgariController : MonoBehaviour
 
         haifu.pointShift = new List<int>(this.pointShift);
 
+        string _key = MakePointShiftKey();
+        string fu_str = "";
+        if (hanNum < 3)
+        {
+            fu_str = dropdownFu.options[fuNum].text;
+        }
+
+        haifu.finishTitle = fu_str + dropdownHansuu.options[hanNum].text + csvData.pointDict[_key][0].ToString() + "点";
+
         taikyokuManager.CreateOutputData();
     }
+
+
+    //----------------------------------------
+    //
+    //            ツモあがり
+    //
+    //----------------------------------------
 
 
 

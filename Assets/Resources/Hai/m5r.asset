@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: m5r
   m_EditorClassIdentifier: 
   haiId: 6
-  haiSprite: {fileID: 21300000, guid: b4b40078bd2724896a522a55dc896cf6, type: 3}
+  haiSprite: {fileID: 21300000, guid: 3a9323b5a82784593a3fe1d2e5e9921b, type: 3}

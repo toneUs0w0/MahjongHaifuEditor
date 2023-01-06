@@ -8,9 +8,20 @@ using UnityEngine;
 public class CollAgariController : MonoBehaviour
 {
     public AgariController agariController;
+    public TumoAgariController tumoAgariController;
 
-    public void CollInitController(int AgariPlayerId, int HoujuPlayerId)
+    public void CollInitController(int AgariPlayerId, int HoujuPlayerId, int mode = 0)
     {
-        agariController.InitAgariController(AgariPlayerId, HoujuPlayerId);
+        switch(mode)
+        {   case 0:
+                agariController.InitAgariControllerRon(AgariPlayerId, HoujuPlayerId);
+                break;
+            case 1:
+                tumoAgariController.InitAgariControllerTumo(AgariPlayerId);
+                break;
+            default:
+                break;
+        }
+        
     }
 }

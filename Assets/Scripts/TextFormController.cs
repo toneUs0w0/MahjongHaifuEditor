@@ -13,17 +13,35 @@ public class TextFormController : MonoBehaviour
     public HaifuData haifu;
 
     public InputField inputFieldTaikyokuName;
+    public InputField inputFieldTaikyokuSubTitle;
     public InputField gameObjPlayerName1;
     public InputField gameObjPlayerName2;
     public InputField gameObjPlayerName3;
     public InputField gameObjPlayerName4;
 
+    public List<GameObject> GmOyaIcons;
+
+    public Dropdown dropdownKyoku;
+    public Dropdown dropdownHonba;
+    public Dropdown dropdownKyotaku;
+
     public string taikyokuStr;
+    private string taikyokuSubTitle;
     public List<string> playerNames;
+    private int kyokuNum;
+    private int honbaNum;
+    private int kyotakuNum;
+    private int oyaId;
 
     private void Start() {
         playerNames = new List<string>() {"東家", "西家", "南家", "北家"};
         taikyokuStr = "NoTitle";
+        taikyokuSubTitle = "";
+        kyokuNum = 0;
+        honbaNum = 0;
+        kyotakuNum = 0;
+        oyaId = 0;
+        ShowOyaIcon();
     }
 
     public void PushStartButton()
@@ -74,6 +92,7 @@ public class TextFormController : MonoBehaviour
         }
 
         inputFieldTaikyokuName = inputFieldTaikyokuName.GetComponent<InputField>();
+        taikyokuSubTitle = inputFieldTaikyokuSubTitle.text;
         taikyokuStr = inputFieldTaikyokuName.text;
 
         playerNames[0] = gameObjPlayerName1.GetComponent<InputField>().text;
@@ -83,6 +102,7 @@ public class TextFormController : MonoBehaviour
 
         haifu = haifu.GetComponent<HaifuData>(); // ここで牌譜のインスタンスを作った方が良さそう
         haifu.taikyokuName = taikyokuStr;
+        haifu.taikyokuSubTitle = taikyokuSubTitle;
 
         for (int i = 0; i < 4; i ++)
         {
@@ -97,11 +117,45 @@ public class TextFormController : MonoBehaviour
             
         }
 
+        haifu.kyoku = kyokuNum;
+        haifu.honba = honbaNum;
+        haifu.kyoutaku = kyotakuNum;
+        haifu.oyaId = oyaId;
+
         // このへんはもっと大枠のclassが必要な気がする
         systemManager.Form2Haipaisetting();
         
 
     }
 
+    public void OnClickDropdownHonba()
+    {
+        honbaNum = dropdownHonba.value;
+    }
+
+    public void OnClickDropdownKyoku()
+    {
+        kyokuNum = dropdownKyoku.value;
+        ShowOyaIcon();
+    }
+
+    public void OnClickDropdownKyotaku()
+    {
+        kyotakuNum = dropdownKyotaku.value;
+    }
+
+
+    private void ShowOyaIcon()
+    {
+        oyaId = kyokuNum % 4;
+        haifu.oyaId = oyaId;
+
+        foreach(GameObject gmOyaIcon in GmOyaIcons)
+        {
+            gmOyaIcon.SetActive(false);
+        }
+        GmOyaIcons[oyaId].SetActive(true);
+
+    }
 
 }

@@ -10,4 +10,10 @@ public class LogMessager
         string logtext = "<color=yellow>" + contents + "</color>";
         Debug.Log(logtext);
     }
+
+    public void LogR(string contents)
+    {
+        string logtext = "<color=red>" + contents + "</color>";
+        Debug.Log(logtext);
+    }
 }
