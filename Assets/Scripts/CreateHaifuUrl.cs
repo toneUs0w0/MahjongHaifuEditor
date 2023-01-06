@@ -40,15 +40,15 @@ public class CreateHaifuUrl : MonoBehaviour
                 finish_str = "[" + finishType_str + "," + finishPointShift_str + "]";
                 break;
 
-            case 1:  // ロン
+            case 1:  // ロン  // 最初の3つの数字にバグあり
                 finishType_str = "\"和了\"";
                 finishPointShift = new List<int>(haifuData.pointShift);
                 finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
-                finish_other_str = "[3,3,3,\"" + finish_title_str + "\"]";
+                finish_other_str = "[0,2,0,\"" + finish_title_str + "\"]";
                 finish_str = "[" + finishType_str + "," + finishPointShift_str + "," + finish_other_str + "]";
                 break;
             
-            case 2:  // ツモ
+            case 2:  // ツモ  // 最初の3つの数字にバグあり
                 finishType_str = "\"和了\"";
                 finishPointShift = new List<int>(haifuData.pointShift);
                 finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
