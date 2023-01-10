@@ -545,6 +545,7 @@ public class TumoAgariController : MonoBehaviour
 
         // finishType ツモ
         haifu.finishType = 2;
+        haifu.finishPlayerId = selectedAgariPlayerId;
         
         // 本場と供託をhaifuに追加  // ゲーム中に変わらないはず
         haifu.honba = this.honba;

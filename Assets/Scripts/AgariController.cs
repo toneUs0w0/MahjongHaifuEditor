@@ -493,6 +493,8 @@ public class AgariController : MonoBehaviour
 
         // finishType ロン
         haifu.finishType = 1;
+        haifu.finishPlayerId = selectedAgariPlayerId;
+        haifu.houjuPlayerId = selectedHoujuPlayerId;
         
         // 本場と供託をhaifuに追加  // ゲーム中に変わらないはず
         haifu.honba = this.honba;
