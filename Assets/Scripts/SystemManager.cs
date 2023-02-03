@@ -9,6 +9,8 @@ public class SystemManager : MonoBehaviour
     public GameObject textFormView;
     public GameObject haipaisettingView;
     public GameObject showOutputView;
+    public GameObject selectSaveDataView;
+    public GameObject titleView;
 
     public TaikyokuManager taikyokuManager;
     public HaipaiSettingManager haipaiSettingManager;
@@ -18,10 +20,19 @@ public class SystemManager : MonoBehaviour
     void Start()
     {
         taikyokuView.SetActive(false);
-        textFormView.SetActive(true);
+        textFormView.SetActive(false);
         haipaisettingView.SetActive(false);
         showOutputView.SetActive(false);
+        selectSaveDataView.SetActive(false);
+        titleView.SetActive(true);
+
     }
+
+    // -----------------------------------
+    //
+    //         遷移関数
+    //
+    // -----------------------------------
 
     // 配牌入力後対局入力へ
     public void HaipaiSetting2Taikyoku()
@@ -54,6 +65,26 @@ public class SystemManager : MonoBehaviour
     {
         textUrl.text = url;
         showOutputView.SetActive(true);
+    }
+
+
+
+    // -----------------------------------
+    //
+    //         タイトルのボタン
+    //
+    // -----------------------------------
+
+    public void pushNewEditButton()
+    {
+        titleView.SetActive(false);
+        textFormView.SetActive(true);
+    }
+
+        public void pushSaveDataEditButton()
+    {
+        titleView.SetActive(false);
+        selectSaveDataView.SetActive(true);
     }
 
 }
