@@ -34,6 +34,12 @@ public class SystemManager : MonoBehaviour
     //
     // -----------------------------------
 
+    public void SaveSelect2Title()
+    {
+        selectSaveDataView.SetActive(false);
+        titleView.SetActive(true);
+    }
+
     // 配牌入力後対局入力へ
     public void HaipaiSetting2Taikyoku()
     {
