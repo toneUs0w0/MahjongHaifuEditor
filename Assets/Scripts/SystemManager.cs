@@ -14,6 +14,7 @@ public class SystemManager : MonoBehaviour
 
     public TaikyokuManager taikyokuManager;
     public HaipaiSettingManager haipaiSettingManager;
+    public SaveFileSelectController saveFileSelectController;
     public Text textUrl;
 
     // Start is called before the first frame update
@@ -91,6 +92,7 @@ public class SystemManager : MonoBehaviour
     {
         titleView.SetActive(false);
         selectSaveDataView.SetActive(true);
+        saveFileSelectController.InitSaveFileSelectView();
     }
 
 }
