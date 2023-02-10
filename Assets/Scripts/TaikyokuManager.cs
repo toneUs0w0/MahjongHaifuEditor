@@ -1303,6 +1303,10 @@ public class TaikyokuManager : MonoBehaviour
         //Application.OpenURL(stringUrl);
         OpenWeb(stringUrl);
         systemManager.showOutput(stringUrl);
+
+        // test
+        JsonFileGenerator jfg = new JsonFileGenerator();
+        jfg.SaveFile(haifuData);
     }
 
     private void OpenWeb(string Url)

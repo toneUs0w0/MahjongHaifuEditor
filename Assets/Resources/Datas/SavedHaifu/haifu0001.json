@@ -1,0 +1,29 @@
+{
+    "taikyokuName":"華丸対局",
+    "taikyokuSubTitle":"サブ華丸対局",
+    "playerNames":["東丸","南丸","西丸","北丸"],
+    "haipai":[[10,10,10,10,10,10,10,10,10,10,10,10,10],[10,10,10,10,10,10,10,10,10,10,10,10,10],[10,10,10,10,10,10,10,10,10,10,10,10,10],[10,10,10,10,10,10,10,10,10,10,10,10,10]],
+    "turns":[[11,14,19],[11,14,19],[11,15,15],[11,15,15],[12,17,16],[12,17,16],[13,18,17],[13,18,17]],
+    "kawa"
+
+    public List<Turn> haifus;   // turnのリスト
+    public List<List<int>> kawa;  // 河
+    public List<List<int>> haipai;  // 配牌
+
+    public List<int> dora;  //ドラ
+    public List<int> uradora;  //裏ドラ
+
+    public int ruleAka;   // ルールid
+    public List<int> mochiten;  //開始時の持ち点
+    public int kyoku;  // 局id
+    public int honba;   // 本場
+    public int kyoutaku;  // 供託本数
+    public int oyaId;  //スタート親
+
+    public int finishType;  //0:流局 1:ロン 2:ツモ
+    public List<int> pointShift;  //ポイントシフト
+    public string finishTitle;  // あがり時の画面表示
+    public int finishPlayerId;  //上がったプレイヤーid
+    public int houjuPlayerId;   // 放銃したプレイヤーid
+    public List<int> agariYaku; // あがり役
+}
