@@ -10,16 +10,26 @@ public class SaveFileSelectController : MonoBehaviour
     [SerializeField] GameObject objSaveFileLoader;
     //[SerializeField] public SaveDataContentController saveDataContentController;
     [SerializeField] GameObject saveDataContentPrefab;
+    [SerializeField] GameObject haifuPrefab;
     private LogMessager logMessager;
 
     private GameObject saveDataPrefab;
     private List<string> haifuFilenamesList = new List<string> () {"debug", "debug"};
     private List<SaveDataContentController> savedataControllers;
 
+    private HaifuData viewingHaifuData;  // 展開する牌譜データ
+    private GameObject viewingHaifu_obj;
+
+
+    [SerializeField] GameObject haifuViewerView;
+
     public void InitSaveFileSelectView()
     {
         haifuFilenamesList = new List<string>();
         savedataControllers = new List<SaveDataContentController>();
+
+        viewingHaifu_obj = Instantiate(haifuPrefab);
+        viewingHaifuData = viewingHaifu_obj.GetComponent<HaifuData>();
 
         ClearAllContents();
         AddAllSaveData2ContensPanel();
@@ -70,5 +80,19 @@ public class SaveFileSelectController : MonoBehaviour
     public void PushReturnButtonFromSaveSelectView()
     {
         systemManager.SaveSelect2Title();
+    }
+
+
+    public void FileSelect2HaifuViewer(string filename)
+    {
+        // 牌譜オブジェクトの作成
+        JsonFileGenerator jfg = new JsonFileGenerator();
+        viewingHaifuData.InitHaifuData(jfg.LoadFile("test.txt")); // 牌譜データのロード
+        
+    }
+
+    private void InitHaifuViewerView()
+    {
+
     }
 }

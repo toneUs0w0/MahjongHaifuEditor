@@ -203,7 +203,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 7637280872470632711}
         m_TargetAssemblyTypeName: SaveDataContentController, Assembly-CSharp
         m_MethodName: PushSaveDataEditButton
         m_Mode: 1

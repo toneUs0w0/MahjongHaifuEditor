@@ -77,7 +77,7 @@ public class HaifuData : MonoBehaviour
     // コンストラクタ
     public HaifuData()
     {
-        this.taikyokuName = "title";
+        this.taikyokuName = "constract_title";
         this.taikyokuSubTitle = "";
         this.haifus = new List<Turn>();
         this.playerNames = new List<string>() {"東", "南", "西", "北"};
@@ -119,15 +119,64 @@ public class HaifuData : MonoBehaviour
 
     }
 
+
+        // 牌譜Dataからのコンストラクタ
+    public void InitHaifuData(HaifuData haifu)
+    {
+        print(haifu.HaifuLogStr());
+        this.taikyokuName = haifu.taikyokuName;
+        this.taikyokuSubTitle = haifu.taikyokuSubTitle;
+        this.haifus = new List<Turn>(haifu.haifus);
+        this.playerNames = new List<string>(haifu.playerNames);
+        this.kawa = new List<List<int>>(haifu.kawa);
+        this.haipai = new List<List<int>>(haifu.haipai);
+        this.dora = new List<int>(haifu.dora);
+        this.uradora = new List<int>(haifu.uradora);
+        this.mochiten = new List<int>(haifu.mochiten);
+        this.pointShift = new List<int>(haifu.pointShift);
+        this.honba = haifu.honba;
+        this.kyoutaku = haifu.kyoutaku;
+        this.finishType = haifu.finishType;
+        this.finishTitle = haifu.finishTitle; 
+        this.finishPlayerId = haifu.finishPlayerId;
+        this.houjuPlayerId = haifu.houjuPlayerId;
+        this.ruleAka = haifu.ruleAka;
+        this.oyaId = haifu.oyaId; 
+        //this.agariYaku = new List<int> (haifu.agariYaku); 
+
+    }
+
     // log
     public string HaifuLogStr()
     {
         string outputLog = "";
+
+        outputLog += "[" + this.taikyokuName + "]\n";
+        outputLog += "(" + this.taikyokuSubTitle + ")\n";
+        outputLog += "Player: [1]" + this.playerNames[0] + " [2] " + this.playerNames[1] + " [3] " + this.playerNames[2] + " [4] " + this.playerNames[3] + "\n";
+        outputLog += "Rule: " + this.ruleAka.ToString() + "\n";
+        outputLog += "Kyoku: " + this.kyoku.ToString() + "\n";
+        outputLog += "Honba: " + this.honba.ToString() + "\n";
+        outputLog += "Kyoutaku: " + this.kyoutaku.ToString() + "\n";
+        outputLog += "Oya Player: " + this.oyaId.ToString() + "\n";
+        outputLog += "Mochiten: [" + string.Join(", ", this.mochiten) + "]\n";
+        outputLog += "Dora: [" + string.Join(", ", this.dora) + "]\n";
+        outputLog += "Uradora: [" + string.Join(", ", this.uradora) + "]\n";
+        outputLog += "Haipai[1]: [" + string.Join(", ", this.haipai[0]) + "]\n";
+        outputLog += "Haipai[2]: [" + string.Join(", ", this.haipai[1]) + "]\n";
+        outputLog += "Haipai[3]: [" + string.Join(", ", this.haipai[2]) + "]\n";
+        outputLog += "Haipai[4]: [" + string.Join(", ", this.haipai[3]) + "]\n";
+        outputLog += " -- Turn -- \n";
         for (int i = 0; i < this.haifus.Count; i++)
         {
             Turn turn = this.haifus[i];
             outputLog += "[" + i.ToString() + "] " + "player: " + turn.playerId.ToString() + ", tumo: " + turn.tumoHaiId.ToString() + ", dahai: " + turn.dahaiId.ToString() + " , Action: " + turn.actionType + "\n";
         }
+        outputLog += "Finish Type: " + this.finishType.ToString() + "\n";
+        outputLog += "Finish Title: " + this.finishTitle + "\n";
+        outputLog += "Finish Player: " + this.finishPlayerId.ToString() + "\n";
+        outputLog += "Finish Houju Player: " + this.houjuPlayerId.ToString() + "\n";
+        outputLog += "Point Shift: [" + string.Join(", ", this.pointShift) + "]\n";
         return outputLog;
     }
 

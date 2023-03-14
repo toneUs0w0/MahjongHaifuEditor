@@ -83,6 +83,9 @@ public class SaveDataContentController : MonoBehaviour
 
     public void PushSaveDataEditButton()
     {
-        
+        // prefabからの呼び出し
+        GameObject objSaveFileSelectController = GameObject.Find("SaveFileSelectController");
+        SaveFileSelectController saveFileSelectController = objSaveFileSelectController.GetComponent<SaveFileSelectController>();
+        saveFileSelectController.FileSelect2HaifuViewer(this.fileName);
     }
 }

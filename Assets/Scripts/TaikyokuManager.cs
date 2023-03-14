@@ -60,6 +60,8 @@ public class TaikyokuManager : MonoBehaviour
 
     static int RYUUKYOKU_YAMANUM = 65;
 
+    private bool isHaipaiInputMode;
+
     private LogMessager logMessager;
 
     // Start is called before the first frame update
@@ -90,6 +92,7 @@ public class TaikyokuManager : MonoBehaviour
     public void InitTaikyokuView()
     {
         print("Init Taikyoku View");
+        InitHaiEntity();
         haifuData = haifuObj.GetComponent<HaifuData>();
         turnPlayerId = haifuData.kyoku % 4;
         SetPlayerName();
@@ -102,6 +105,7 @@ public class TaikyokuManager : MonoBehaviour
         yamaNum = 69;  // 山枚数の初期化
         AllPanelClose();
         DahaiModeSelectButtonShapeChanger();
+        isHaipaiInputMode = false;
     }
 
     // 牌譜の取得 

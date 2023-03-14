@@ -53,10 +53,12 @@ public class SystemManager : MonoBehaviour
     //入力フォームから配牌入力
     public void Form2Haipaisetting()
     {
-        haipaisettingView.SetActive(true);
+        //haipaisettingView.SetActive(true);
         textFormView.SetActive(false);
+        taikyokuView.SetActive(true);
+        taikyokuManager.InitTaikyokuView();
 
-        haipaiSettingManager.systemInitialize();
+        //haipaiSettingManager.systemInitialize();
     }
 
      //入力フォームから対局入力

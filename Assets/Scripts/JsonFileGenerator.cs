@@ -24,8 +24,9 @@ public class JsonFileGenerator
 
 
     // 牌譜URLファイルをロード
-    public HaifuData LoadFile(string path)
+    public HaifuData LoadFile(string filename)
     {
+        string path = SAVE_DATA_PATH + filename;
         HaifuData rtnHaifu = new HaifuData();
         string _str_data = File.ReadAllText(path);
         rtnHaifu = LoadsHaifuFromUrl(_str_data);
@@ -265,8 +266,8 @@ public class JsonFileGenerator
         string _log_v = Regex.Match(haifus, "\"log\":.*]").Value;
         string _log_all_content = Regex.Match(_log_v, "\\[.*\\]").Value;
         MatchCollection results = Regex.Matches(_log_all_content, "\\[.*?\\]");
-        haifu.taikyokuName = results[4].Value;
-        haifu.taikyokuSubTitle = results[7].Value;
+        //haifu.taikyokuName = results[16].Value;
+        //haifu.taikyokuSubTitle = results[17].Value;
 
         //局id, 本場, 供託
         string[] _log_kht = Regex.Match(results[0].Value, "[0-9]*,[0-9]*,[0-9]*").Value.Split(",");
@@ -355,21 +356,48 @@ public class JsonFileGenerator
         }
 
 
-        // ターン処理
-        p_id = haifu.oyaId;
+        // ターン処理  // 鳴きの処理を加筆する必要がある
+        int p_id = haifu.oyaId;
         int[] tumo_start_index = {0, 0, 0, 0};
         int[] dahai_start_index = {0, 0, 0, 0};
 
+        int tumo_haiId = 0;
+        int dahai_haiId = 0;
+        bool isRon;
+
+        Turn turn = new Turn();
+
         // 修正予定
-        While()
+        while(true)
         {
             //ツモ牌
-            Turn turn = new turn();
+            turn = new Turn();
+
+            // ツモ牌が足りない場合
+            if (tumo_start_index[p_id] >= tumo[p_id].Count)
+            {
+                isRon = true;
+                break;
+            }
 
             tumo_haiId = tumo[p_id][tumo_start_index[p_id]];
             tumo_start_index[p_id]++;
 
             //打牌
+
+            // 打牌が足りない場合 -> ツモあがり 
+            if (dahai_start_index[p_id] >= dahai[p_id].Count)
+            {
+                isRon = false;
+                turn.playerId = p_id;
+                turn.tumoHaiId = tumo_haiId;
+                turn.dahaiId = 0;
+                turn.actionType = "Tumo_finish";
+
+                haifu.haifus.Add(turn);
+                break;
+            }
+
             dahai_haiId = dahai[p_id][dahai_start_index[p_id]];
             dahai_start_index[p_id]++;
 
@@ -384,16 +412,54 @@ public class JsonFileGenerator
         }
 
 
+        // 終局方法
+        string _log_finishtag_piontshift = results[16].Value;
+        string _finish_tag = Regex.Match(_log_finishtag_piontshift, "\".*?\"").Value;
+        _finish_tag = _finish_tag.Substring(1, _finish_tag.Length - 2);
+        if (_finish_tag == "流局")
+        {
+            haifu.finishType = 0;
+        }
+        else if (_finish_tag == "和了")
+        {
+            if (isRon)
+            {
+                haifu.finishType = 1;
+            }
+            else
+            {
+                haifu.finishType = 2;
+            }
+        }
 
+        // 点数移動
+        string[] _point_shift_str = Regex.Match(_log_finishtag_piontshift, "-*[0-9]+,-*[0-9]+,-*[0-9]+,-*[0-9]+").Value.Split(",");
+        for(int i = 0; i < 4; i++)
+        {
+            haifu.pointShift[i] = int.Parse(_point_shift_str[i]);
+        }
 
-
-
-
-
-
-
-
-
+        // Additional
+        if (haifu.finishType != 0)  // 流局の場合は考えない
+        {
+            string _fisish_add_str = Regex.Match(results[17].Value, "[0-9]+,[0-9]+,[0-9]+,\".*\"").Value;
+            string[] _fin_str_tags = _fisish_add_str.Split(",");
+            if (isRon)
+            {
+                haifu.finishPlayerId = int.Parse(_fin_str_tags[0]);
+                haifu.houjuPlayerId = int.Parse(_fin_str_tags[1]);
+            }
+            else
+            {
+                haifu.finishPlayerId = int.Parse(_fin_str_tags[0]);
+            }
+            string finish_title =  Regex.Match(_fisish_add_str, "\".*\"").Value;
+            haifu.finishTitle = finish_title;
+        }
+        
+        
+        //haifu.taikyokuName =  _fisish_add_str;
+        //haifu.taikyokuSubTitle = results[17].Value;
 
 
 

@@ -6,9 +6,9 @@ public class ForDebug : MonoBehaviour
 {
     public void PushDebugButton()
     {
-        string PATH = "Assets/Resources/Datas/SavedHaifu/" + "test.txt";
+        string filename = "test.txt";
         JsonFileGenerator jfg = new JsonFileGenerator();
-        HaifuData haifu = jfg.LoadFile(PATH);
+        HaifuData haifu = jfg.LoadFile(filename);
         print(haifu.taikyokuName);
         print(haifu.taikyokuSubTitle);
         print(haifu.playerNames[0]);
@@ -27,6 +27,7 @@ public class ForDebug : MonoBehaviour
         print(string.Join(", ", haifu.haipai[1]));
         print(string.Join(", ", haifu.haipai[2]));
         print(string.Join(", ", haifu.haipai[3]));
+        print(haifu.HaifuLogStr());
     }
 
 
