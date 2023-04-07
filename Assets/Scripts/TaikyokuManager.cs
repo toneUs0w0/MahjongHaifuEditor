@@ -60,7 +60,9 @@ public class TaikyokuManager : MonoBehaviour
 
     static int RYUUKYOKU_YAMANUM = 65;
 
-    private bool isHaipaiInputMode;
+    private bool isHaipaiInputMode;  // 配牌設定モード
+    private bool passTehaiChecker;
+    private List<bool> isFirstTurn;
 
     private LogMessager logMessager;
 
@@ -106,6 +108,10 @@ public class TaikyokuManager : MonoBehaviour
         AllPanelClose();
         DahaiModeSelectButtonShapeChanger();
         isHaipaiInputMode = false;
+        GetComponent<HaipaiSetting>().CloseHaipaiSetting();
+        isFirstTurn = new List<bool> () {false, false, false, false};
+        PushTehaiPanel4HaipaiSetting(); // 配牌入力
+        passTehaiChecker = false;
     }
 
     // 牌譜の取得 
@@ -231,6 +237,12 @@ public class TaikyokuManager : MonoBehaviour
 
     public void PushHaiButton(int HaiId)
     {
+        if (isHaipaiInputMode)
+        {
+            this.GetComponent<HaipaiSetting>().haiButtonInput(HaiId);
+            return;
+        }
+
         if (isTumoEditing)
         {
             if (rinshanInputMode)    // 嶺上牌の登録
@@ -286,9 +298,9 @@ public class TaikyokuManager : MonoBehaviour
         }
         else  //打牌入力の処理
         {
-            // 手牌表示のエラーチェック
-            if (tehaiCorrect)
+            if (!passTehaiChecker)
             {
+                // 打牌に誤りが無いかの確認
                 bool continueNextButton = true;
                 if (rinshanInputMode)  // 嶺上牌を含めての確認
                 {
@@ -390,6 +402,12 @@ public class TaikyokuManager : MonoBehaviour
         {
             ShowRyukyokuButton(true);
         }
+        // 最初の手番なら配牌登録を開く
+        if (!isFirstTurn[turnPlayerId])
+        {
+            PushTehaiPanel4HaipaiSetting();
+        }
+        passTehaiChecker = false;
 
     }
 
@@ -485,6 +503,25 @@ public class TaikyokuManager : MonoBehaviour
     public void PushRyuukyokuButton()
     {
         CreateOutputData();
+    }
+
+    // 配牌入力
+    public void PushTehaiPanel4HaipaiSetting()
+    {
+        if (!isHaipaiInputMode)
+        {
+            isHaipaiInputMode = true;
+            HaipaiSetting haipaiSetting = this.GetComponent<HaipaiSetting>();
+            haipaiSetting.InitHaipaiSetting(turn_player_id:turnPlayerId);
+            isFirstTurn[turnPlayerId] = true;
+        }
+    }
+
+    public void TurnOffHaipaiSettingMode()
+    {
+        isHaipaiInputMode = false;
+        ShowTehai();
+
     }
 
     //--------------------------------------------------------
@@ -1041,30 +1078,29 @@ public class TaikyokuManager : MonoBehaviour
 
         tehaiIds = new List<List<int>>();
 
+        for (int i = 0; i < 4; i++)
+        {
+            tehaiIds.Add(new List<int>() {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+        }
+
         if (UsingHaipai)
         {
             for (int i = 0; i < 4; i++)
             {
                 if (haifuData.haipai[i].Count != 13)
                 {
-                    print("Haipai not exist ERROR");
+                    logMessager.LogY("HAIPAI IS NOT SETTED");
                     return;
                 }
-
-                tehaiIds.Add(new List<int>(haifuData.haipai[i]));
-            }
-        }
-        else
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                tehaiIds.Add(new List<int>() {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+                tehaiIds[i] = new List<int>(haifuData.haipai[i]);
             }
         }
     }
     // tehaiIds[turnPlayerId]の情報をImageに反映
     private void ShowTehai()
     {
+        MakeTehaiShift(turnPlayerId);
+
         for(int i = 0; i < tehaiIds[turnPlayerId].Count; i++)
         {
             ShowHai2Tehai(i, tehaiIds[turnPlayerId][i]);
@@ -1077,7 +1113,7 @@ public class TaikyokuManager : MonoBehaviour
         imageTehaiList[TehaiIndex].sprite = haiEnts[HaiId].haiSprite;
     }
 
-    // turnPlayerのtehaiIdsの更新
+    // turnPlayerのtehaiIdの更新に問題が無いかを確認し、問題がある場合は警告する
     private bool TehaiChange(int TumoId, int DahaiId)
     {
         if (!tehaiCorrect) // 手牌が正しくない場合はそもそも実施しない
@@ -1089,26 +1125,22 @@ public class TaikyokuManager : MonoBehaviour
         {
             return true;
         }
-
         bool dahaiExist = false;
         for (int i = 0; i < tehaiIds[turnPlayerId].Count; i++)
         {
             if (tehaiIds[turnPlayerId][i] == DahaiId)
             {
-                tehaiIds[turnPlayerId][i] = TumoId;  //打牌の代わりにツモ牌を入れる  //鳴きの場合は後で
                 dahaiExist = true;
                 break;
             }
         }
-
         if (!dahaiExist)  // 打牌が手牌にない場合
         {
+            passTehaiChecker = false; // 念のため, エラーダイヤログで続行するとtrueになる
             ShowNakiPanel(show:true, mode:2); // エラーダイアログ表示
             return false; // 一旦処理は終了
 
         }
-
-        SortAllTehai();  // 全ての手牌をソート
         return true;
     
     }
@@ -1175,8 +1207,12 @@ public class TaikyokuManager : MonoBehaviour
         ShowNakiPanel(false);
 
         // 次に呼び出さないように手牌入力をoffに
-        tehaiCorrect = false;
+        // tehaiCorrect = false;
         // 通常のnextbuttonの処理
+        //PushNextbutton();
+
+        // 次は手牌確認を行わないようにするための処理
+        passTehaiChecker = true;
         PushNextbutton();
     }
 
@@ -1185,6 +1221,67 @@ public class TaikyokuManager : MonoBehaviour
         // ダイアログを閉じる
         ShowHaiNotInTehaiDialog(HaiId:0, show: false);
         ShowNakiPanel(false);
+
+    }
+
+    // 配牌から牌譜ログを追って手牌を形成する
+    // 2023/03/16 - 手牌に打牌が無い場合に手牌を更新できない
+    private bool MakeTehaiShift(int p_id)
+    {
+        if (p_id < 0 || p_id > 4)
+        {
+            logMessager.LogR("ERROR: playerID is mismatched ! ");
+        }
+
+        List<int> tehai = new List<int> (haifuData.haipai[p_id]);
+
+        foreach (Turn turn in haifuData.haifus)
+        {
+            if (turn.playerId == p_id)
+            {
+                print(string.Join(", ", tehai));
+                print(turn.log_str());
+                bool dahaiExist = false;
+                for (int i = 0; i < tehai.Count; i++)
+                {
+                    if (turn.tumoHaiId == turn.dahaiId)
+                    {
+                        dahaiExist = true;
+                        break;
+                    }
+                    if (tehai[i] == turn.dahaiId)
+                    {
+                        tehai[i] = turn.tumoHaiId;
+                        dahaiExist = true;
+                        break;
+                    }
+                }
+                if (!dahaiExist)
+                {
+                    // 打牌が無い場合でも手牌に0があるなら良しとする
+                    // その場合配牌に打牌を追加する
+                    bool can_solve_unknown = false;
+                    for (int i = 0; i < tehai.Count; i++)
+                    {
+                        if (tehai[i] == 0)
+                        {
+                            tehai[i] = turn.tumoHaiId;
+                            can_solve_unknown = true;
+                            break;
+                        }
+                    }
+                    if (!can_solve_unknown)
+                    {
+                        print("tehai is not solved.");
+                        return false;
+                    }
+                    
+                }
+
+            }
+        }
+        tehaiIds[p_id] = new List<int> (tehai);
+        return true;
 
     }
 
