@@ -226,7 +226,7 @@ public class TumoAgariController : MonoBehaviour
             c_p = "C";
         }
 
-        if(hanNum > 3)  //満貫以上なら符は0
+        if(hanNum > 4)  //満貫以上なら符は0
         {
             _fu_st = "0";
         }
@@ -545,6 +545,7 @@ public class TumoAgariController : MonoBehaviour
 
         // finishType ツモ
         haifu.finishType = 2;
+        haifu.finishPlayerId = selectedAgariPlayerId;
         
         // 本場と供託をhaifuに追加  // ゲーム中に変わらないはず
         haifu.honba = this.honba;

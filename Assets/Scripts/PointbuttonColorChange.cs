@@ -11,7 +11,6 @@ public class PointbuttonColorChange : MonoBehaviour
     {
         // 数値的な処理ではなくみための処理
         
-        agariController.AllPointButtonOff();
         ShapeController shapeController = this.GetComponent<ShapeController>();
         shapeController.onButtonGreen();
     }

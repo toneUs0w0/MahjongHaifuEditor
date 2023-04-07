@@ -9,6 +9,7 @@ public class CreateHaifuUrl : MonoBehaviour
     public string CreateHaifuUrlFromHaifuData()
     {
         string title_str = "\"title\":[\"" + haifuData.taikyokuName + "\",\"" + haifuData.taikyokuSubTitle + "\"]";
+        int front_player_id = (20 - haifuData.kyoku) % 4;
         string player_str = "\"name\":[\"" + haifuData.playerNames[0] + "\",\"" + haifuData.playerNames[1] + "\",\"" + haifuData.playerNames[2] + "\",\"" + haifuData.playerNames[3] + "\"]";
         string rule_str = "\"rule\":{\"aka\":0}";
         string honba_str = "[" + haifuData.kyoku.ToString() + "," + haifuData.honba.ToString() + "," + haifuData.kyoutaku.ToString() + "]";
@@ -33,27 +34,29 @@ public class CreateHaifuUrl : MonoBehaviour
         string finish_title_str = haifuData.finishTitle;
         switch (haifuData.finishType)
         {
-            case 0:
+            case 0:    // テンパイ料は未実装
                 finishType_str = "\"流局\"";
                 finishPointShift = new List<int>(){3000, -1000, -1000, -1000};
                 finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
                 finish_str = "[" + finishType_str + "," + finishPointShift_str + "]";
                 break;
 
-            case 1:  // ロン
+            case 1:  // ロン  // 最初の3つの数字にバグあり  //おそらく解決
                 finishType_str = "\"和了\"";
                 finishPointShift = new List<int>(haifuData.pointShift);
                 finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
-                finish_other_str = "[3,3,3,\"" + finish_title_str + "\"]";
+                finish_other_str = "[" + haifuData.finishPlayerId.ToString() + "," + haifuData.houjuPlayerId.ToString() + "," + haifuData.finishPlayerId.ToString() + ",\"" + finish_title_str + "\"]";
                 finish_str = "[" + finishType_str + "," + finishPointShift_str + "," + finish_other_str + "]";
                 break;
             
-            case 2:  // ツモ
+            case 2:  // ツモ  // 最初の3つの数字にバグあり  //おそらく解決
                 finishType_str = "\"和了\"";
                 finishPointShift = new List<int>(haifuData.pointShift);
                 finishPointShift_str = "[" + string.Join(",", finishPointShift) + "]";
-                finish_other_str = "[3,3,3,\"" + finish_title_str + "\"]";
+                finish_other_str = "[" + haifuData.finishPlayerId.ToString() + "," + haifuData.finishPlayerId.ToString() + "," + haifuData.finishPlayerId.ToString() + ",\"" + finish_title_str + "\"]";
                 finish_str = "[" + finishType_str + "," + finishPointShift_str + "," + finish_other_str + "]";
+                tumo_dahai_str_list[1][haifuData.finishPlayerId].RemoveAt(tumo_dahai_str_list[1][haifuData.finishPlayerId].Count - 1);  // ツモあがりの場合は末尾の打牌を削除
+
                 break;
             
             default:

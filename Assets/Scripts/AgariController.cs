@@ -16,7 +16,6 @@ public class AgariController : MonoBehaviour
     public TaikyokuManager taikyokuManager;
     public CSVReader csvData;
 
-    public List<GameObject> pointButtons;
     public Text textKyoutakuNum;
     public Text textHonbaNum;
 
@@ -28,9 +27,10 @@ public class AgariController : MonoBehaviour
     public List<Text> textPlayerBoxName;
     public List<Text> textPlayerBoxPointShift;
 
+    public List<Image> imageDoraOriginal; // ドラ選択画面の方と区別
+
     public HaifuData haifu;
 
-    private int onPushPoint;
     private List<int> pointShift;
     private int selectedAgariPlayerId;
     private int selectedHoujuPlayerId;
@@ -45,17 +45,19 @@ public class AgariController : MonoBehaviour
     private bool reachPlayer4;
 
     // fuNumの変換用
-    private List<int> fuId2FuNum = new List<int>() {20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110};
+    private List<int> fuId2FuNum = new List<int>() {0, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110};
+    private List<string> fuOptionList = new List<string>() {"-test符", "20符", "25符", "30符", "40符", "50符", "60符",
+                                                                "70符", "80符", "90符", "100符", "110符"};
+    private Dictionary<string, int> fuStr2fuId = new Dictionary<string, int>();
 
     private LogMessager logMessager;
 
     //  初期処理
     public void InitAgariControllerRon(int AgariPlayerId, int HoujuPlayerId)
     {
-        AllPointButtonOff();
         InitPointShiftView();
         InitDropdown();
-        onPushPoint = 0;
+        InitFuDic();
 
         // プルダウンにはfromとtoを代入しておく
         selectedAgariPlayerId = AgariPlayerId;
@@ -64,9 +66,18 @@ public class AgariController : MonoBehaviour
         dropdownHoujuPlayer.value = HoujuPlayerId;
 
         hanNum = 0; // 1ハン
-        fuNum = 2;  // 30符
-        isOya = false;
-        SetValueToHansuuFuDropdown();
+        fuNum = 0;  // 30符
+
+        if (AgariPlayerId == haifu.oyaId)
+        {
+            isOya = true;
+        }
+        else
+        {
+            isOya  = false;
+        }
+
+        SetFuOption();
 
         // 供託、本場、リーチ棒の初期化 // haifuを参照して初期化する予定
         honba = haifu.honba;
@@ -80,43 +91,35 @@ public class AgariController : MonoBehaviour
         textHonbaNum.text = honba.ToString();  // 本場の初期後に表示する
         textKyoutakuNum.text = kyoutaku.ToString();
 
+        
+        InitDoraSelectPanel();
+        ShowDoraSelectPanel(false);
+
+
 
         // ログ
         logMessager = new LogMessager();
     }
-    
 
-    // ポイントボタン
-    public void OnPushPointButton(int Point)
+    //  符のdropdownのための辞書作成
+    private void InitFuDic()
     {
-        logMessager = new LogMessager();
-        logMessager.LogY(Point.ToString());
-        //AllPointButtonOff();
-
-        onPushPoint = Point;
-        CulcPointShift();
-
-    }
-
-    //  全てのボタンを初期化
-    public void AllPointButtonOff()
-    {
-        for(int i = 0; i < pointButtons.Count; i++)
+        for(int  i = 0;  i < fuOptionList.Count; i++)
         {
-            GameObject buttonPoint = pointButtons[i];
-            ShapeController shapeController = buttonPoint.GetComponent<ShapeController>();
-            shapeController.offButtonShapeChange();
+            fuStr2fuId.Add(fuOptionList[i], i);
         }
     }
+    
 
     //-----------------------------------------------------
     //
-    //                移動点数
+    //                ハンと符のドロップダウン
     //
     //-----------------------------------------------------
 
     public Dropdown dropdownHansuu;
     public Dropdown dropdownFu;
+    public GameObject goDropdownFu;
 
     private void SetValueToHansuuFuDropdown()
     {
@@ -124,19 +127,88 @@ public class AgariController : MonoBehaviour
         dropdownFu.value = fuNum;
     }
 
-    public void ClickHansuuFuDropdown()
+    
+    public void ClickHansuuDropdown()
     {
         hanNum = dropdownHansuu.value;
-        fuNum = dropdownFu.value;
+        SetFuOption();  //  符の項目を絞る
+        dropdownFu.value = 0;  // 符については仕切り直し
+        if (dropdownFu.options.Count > 0)   // 場合によっては符のドロップアウトの要素がないこともあるので (満貫以上とか)
+        {
+            string _st = dropdownFu.options[0].text;  // fuのdropdownの最初の項目を取得
+            fuNum = fuStr2fuId[_st];
+        }
+        else
+        {
+            fuNum = 0;
+        }
+
         CulcPointShift();
     }
+
+    public void ClickFuDropdown()
+    {
+        string selectedFuString = dropdownFu.options[dropdownFu.value].text;
+        fuNum = fuStr2fuId[selectedFuString];
+
+        CulcPointShift();
+    }
+
+    // 選択可能なoptionのみを表示
+    private void SetFuOption()
+    {
+        List<int> _hansuuOptionInt = new List<int>();
+        List<string> _hansuuOption = new List<string>();
+
+
+        // ハンを設定していない時と満貫以上の時はそもそも符を表示しない
+        if (hanNum == 0 || hanNum > 4 )
+        {
+            ShowFuDropdown(false);
+        }
+        else
+        {
+            ShowFuDropdown(true);
+            dropdownFu.ClearOptions();
+            switch (hanNum)
+            {
+                case 1:
+                    _hansuuOptionInt = new List<int>() {3, 4, 5, 6, 7, 8, 9, 10, 11};
+                    break;
+                case 2:
+                    _hansuuOptionInt = new List<int>() {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+                    break;
+                case 3:
+                    _hansuuOptionInt = new List<int>() {1, 2, 3, 4, 5, 6};
+                    break;
+                case 4:
+                    _hansuuOptionInt = new List<int>() {1, 2, 3};
+                    break;
+                default:
+                    break;
+            }
+            for (int i = 0; i < _hansuuOptionInt.Count; i++)
+            {
+                 _hansuuOption.Add(fuOptionList[_hansuuOptionInt[i]]);
+            }
+            dropdownFu.AddOptions( _hansuuOption);
+        }
+        
+    }
+
+    private void ShowFuDropdown(bool Show)
+    {
+        goDropdownFu.SetActive(Show);
+    }
+
+
     
     // csvから読み取った辞書のkeyを返す // 辞書にないなら空文字列を返却
     private string MakePointShiftKey()
     {
         string c_p = "C";
         string r_t = "R";
-        string _han_st = (hanNum + 1).ToString();
+        string _han_st = (hanNum).ToString();
         string _fu_st = fuId2FuNum[fuNum].ToString();
         string _key;
 
@@ -173,8 +245,6 @@ public class AgariController : MonoBehaviour
 
         
     }
-
-
 
     //-----------------------------------------------------
     //
@@ -423,6 +493,8 @@ public class AgariController : MonoBehaviour
 
         // finishType ロン
         haifu.finishType = 1;
+        haifu.finishPlayerId = selectedAgariPlayerId;
+        haifu.houjuPlayerId = selectedHoujuPlayerId;
         
         // 本場と供託をhaifuに追加  // ゲーム中に変わらないはず
         haifu.honba = this.honba;
@@ -443,11 +515,131 @@ public class AgariController : MonoBehaviour
     }
 
 
-    //----------------------------------------
+
+    //-----------------------------------------------------
     //
-    //            ツモあがり
+    //                ドラ指定
     //
-    //----------------------------------------
+    //-----------------------------------------------------
+
+    public GameObject doraSelectPanel;
+    public List<ShapeController> shapeControllerDoras;
+    public List<Image> imageDora;
+
+    private List<HaiEntity> haiEnts = new List<HaiEntity>();
+
+    private int selectedDoraImageId; // 0-7
+    public List<int> selectedDoraIds;
+
+    public void InitDoraSelectPanel()
+    {
+        selectedDoraImageId = 0; // ゲーム開始時に指定していない場合は0スタート
+
+        selectedDoraIds = new List<int>();
+        for (int i  = 0; i < 8; i++)
+        {
+            selectedDoraIds.Add(0);
+        }
+    
+        List<string> index2id = new List<string>() {"none", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m5r", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p5r", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s5r", "j1", "j2", "j3", "j4", "j5", "j6", "j7"};
+
+        //haiEntityのリストをロード
+        for (int n = 0; n < index2id.Count; n++)
+        {
+            HaiEntity haiEnt = (HaiEntity)Resources.Load("Hai/" + index2id[n]);
+            haiEnts.Add(haiEnt);
+        }
+
+        ShowDoraPanelSelectFrame();
+        DoraImageSetting();
+
+    }
+
+    public void ShowDoraSelectPanel(bool Show)
+    {
+        doraSelectPanel.SetActive(Show);
+    }
+
+
+    private void ShowDoraPanelSelectFrame()
+    {
+        foreach(ShapeController sc in shapeControllerDoras)
+        {
+            sc.haiButtonInitColor();
+        }
+        shapeControllerDoras[selectedDoraImageId].haiButtonSelectedColorChange();
+    }
+
+
+    public void PushDoraSelect(int DoraImageId)
+    {
+        selectedDoraImageId = DoraImageId;
+        ShowDoraPanelSelectFrame();
+    }
+
+
+    public void PushHaiButtonForDoraSelect(int HaiId)
+    {
+        if (selectedDoraIds.Count != 8)
+        {
+            logMessager = new LogMessager();
+            logMessager.LogR("selectedDoraIds.Count is not 8. ");
+            return;
+        }
+        selectedDoraIds[selectedDoraImageId] = HaiId;
+        DoraImageSetting();
+
+    }
+    
+
+    // ドラ選択画面下部のドラimageに現在選択されている牌imageを挿入
+    private void DoraImageSetting()
+    {
+        for(int i = 0; i < 8; i++)
+        {
+            imageDora[i].sprite = haiEnts[selectedDoraIds[i]].haiSprite;
+        }
+    }
+
+    // ドラ選択パネルの戻るボタン
+    public void ReturnFromDoraSelectPanel()
+    {
+        ShowDoraSelectPanel(false);
+        SetDoraIdToHaifuData();
+        OriginalDoraImageSetting();
+    }
+
+    // ドラ選択パネルでの結果を牌譜にパス
+    private void SetDoraIdToHaifuData()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            haifu.dora[i] = selectedDoraIds[i];
+        }
+        for (int i = 4; i < 8; i++)
+        {
+            haifu.uradora[i-4] = selectedDoraIds[i];
+        }
+    }
+
+    // 元のパネルにドラのimageを挿入
+    private void OriginalDoraImageSetting()
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            imageDoraOriginal[i].sprite = haiEnts[haifu.dora[i]].haiSprite;
+        }
+        for(int i = 4; i < 8; i++)
+        {
+            imageDoraOriginal[i].sprite = haiEnts[haifu.uradora[i-4]].haiSprite;
+        }
+    }
+
+
+
+
+
+
 
 
 
