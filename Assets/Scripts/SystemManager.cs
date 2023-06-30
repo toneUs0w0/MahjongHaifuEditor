@@ -70,6 +70,14 @@ public class SystemManager : MonoBehaviour
         taikyokuManager.InitTaikyokuView();
     }
 
+    // 対局入力を破棄してタイトルへ戻る
+    public void TaikyokuView2Title()
+    {
+        taikyokuView.SetActive(false);
+        titleView.SetActive(true);
+
+    }
+
     public void showOutput(string url)
     {
         textUrl.text = url;
