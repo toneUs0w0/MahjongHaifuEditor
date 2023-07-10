@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System;
 using System.Text.RegularExpressions;
 
 
@@ -9,17 +10,36 @@ using System.Text.RegularExpressions;
 public class JsonFileGenerator
 {
     private string SAVE_DATA_PATH = "Assets/Resources/Datas/SavedHaifu/";
+    private string SAVE_DATA_INFO_PATH = "Assets/Resources/Datas/SavedHaifuInfos/";
+    private string SAVED_INFO_FILE_NAMES_LIST_TEXT = "Assets/Resources/Datas/savedFileNames.txt";
     private string HAIFU_URL = "";
     private HaifuData haifuData;
 
 
 
     // 牌譜URLを保存
-    public void SaveFile(HaifuData haifu)
+    public void SaveFile(HaifuData haifu, string file_name = "")
     {
+        string file_num;
+
+        if (file_name != "")
+        {
+            file_num = file_name;
+        }
+        else
+        {
+            DateTime dt = DateTime.Now;
+            file_num = dt.ToString("yyyy-MM-dd-HH-mm-ss");
+        }
+
         haifuData = haifu;
         HAIFU_URL = CreateHaifuUrl();
-        File.WriteAllText(SAVE_DATA_PATH + "test.txt", HAIFU_URL);
+        string haifu_info_conts = CreateHaifuInfoContent(haifu, file_num);
+        File.WriteAllText(SAVE_DATA_PATH + file_num + ".txt", HAIFU_URL);      // haifu file
+        File.WriteAllText(SAVE_DATA_INFO_PATH + file_num + ".txt", haifu_info_conts);  // info file
+        File.AppendAllText(SAVED_INFO_FILE_NAMES_LIST_TEXT, file_num+"\n");
+
+
     }
 
 
@@ -33,6 +53,17 @@ public class JsonFileGenerator
 
         return rtnHaifu;
 
+    }
+
+    // make haifu infos file
+    private string CreateHaifuInfoContent(HaifuData haifu, string haifu_name)
+    {
+        List<string> conts = new List<string> { haifu_name , haifu.taikyokuName ,
+            haifu.taikyokuSubTitle, haifu.honba.ToString(), haifu.kyoutaku.ToString(),
+            haifu.playerNames[0], haifu.playerNames[1], haifu.playerNames[2], haifu.playerNames[3], haifu_name};
+
+        string rtn_str = string.Join(",", conts);
+        return rtn_str;
     }
 
     // 牌譜URLを作成

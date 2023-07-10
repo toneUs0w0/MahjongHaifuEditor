@@ -1,3 +1,5 @@
+// NOT USED
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -120,24 +122,55 @@ public class HaipaiSettingManager : MonoBehaviour
     {
         int pos = 0;
         int delete = 0;
-        tehaiIdList.Sort();
-        for (int i = 0; i < tehaiIdList.Count; i++)
+        List<float> tmp_tehai = new List<float>();
+        foreach (int int_tehai_num in tehaiIdList)
         {
-            int tehaiId = tehaiIdList[i];
-            if (tehaiId == 0)
+            if (int_tehai_num == 10 | int_tehai_num == 20 | int_tehai_num == 30)
+            {
+                tmp_tehai.Add((float)int_tehai_num - (float)4.5);
+            }
+            else
+            {
+                tmp_tehai.Add((float)int_tehai_num);
+            }
+        }
+        tmp_tehai.Sort();
+        for (int j = 0; j < tmp_tehai.Count; j++)
+        {
+            float tId = tmp_tehai[j];
+            if (tId == 0)
             {
                 delete++;
             }
             else
             {
-                tehaiIdList[pos] = tehaiId;
+                //print("tehailength : " + tmp_tehai.Count.ToString());
+                //print("pos : " + pos.ToString());
+
+                tmp_tehai[pos] = tId;
                 pos++;
             }
         }
-        for (int j = pos; j < tehaiIdList.Count; j++)
+        for (int k = pos; k < tmp_tehai.Count; k++)
         {
-            tehaiIdList[j] = 0;
+            tmp_tehai[k] = 0;
         }
+        print(string.Join(" ", tmp_tehai));
+        List<int> tmp_tehai2 = new List<int>();
+        foreach (float float_hai_num in tmp_tehai)
+        {
+            if (float_hai_num % 1 != 0)
+            {
+                tmp_tehai2.Add((int)(float_hai_num + 4.5));
+            }
+            else
+            {
+                tmp_tehai2.Add((int)float_hai_num);
+            }
+        }
+
+
+        tehaiIdList = new List<int>(tmp_tehai2);
     }
 
     // 現在のtehaiId列を配牌に登録する

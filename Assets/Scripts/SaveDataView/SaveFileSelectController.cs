@@ -35,13 +35,13 @@ public class SaveFileSelectController : MonoBehaviour
         AddAllSaveData2ContensPanel();
     }
 
-    //なぜか消えてくれない
     private void ClearAllContents()
     {
         Transform _parentTransform = saveDataContentsPanel.GetComponent<Transform>();
-        foreach ( Transform n in _parentTransform )
+        for (int index = 0; index < _parentTransform.childCount; index++)
         {
-            GameObject.Destroy(n.gameObject);
+            print(_parentTransform.GetChild(index).gameObject);
+            Destroy(_parentTransform.GetChild(index).gameObject);
         }
     }
 

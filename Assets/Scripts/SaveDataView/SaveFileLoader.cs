@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class SaveFileLoader : MonoBehaviour
 {
     public List<HaifuInfo> haifuInfoList;
     public List<string> haifuInfoFileNames;
     private string SAVED_HAIFU_INFO_DIR = "Datas/SavedHaifuInfos/";
+    private string SAVED_INFO_FILE_NAMES_LIST_TEXT = "Datas/savedFileNames";
     private int SAVED_HAIFU_INFO_ELEMENT_SIZE = 10;
     private LogMessager logMessager;
 
@@ -17,9 +19,30 @@ public class SaveFileLoader : MonoBehaviour
         haifuInfoFileNames = new List<string>(){"info0001", "info0002"};
     }
 
+    // import info file names from Datas/savedFileNames
+    private void haifuInfoFileNamesLoad()
+    {
+        haifuInfoFileNames = new List<string>(); //clear
+        var info_file_names_textf = Resources.Load<TextAsset>(SAVED_INFO_FILE_NAMES_LIST_TEXT) as TextAsset;
+        string info_file_names_textf_st = info_file_names_textf.text;
+        string[] haifuinfo_filename_list = info_file_names_textf_st.Split("\n");
+        foreach(string filenam in haifuinfo_filename_list)
+        {
+            haifuInfoFileNames.Add(filenam);
+        }
+
+    }
+
     public void SavedHaifuInfosLoad()
     {
-        foreach(string haifuInfoFileName in haifuInfoFileNames)
+        // delete all haifuInfos
+        haifuInfoList = new List<HaifuInfo>();
+
+        // get haifu Info File Names
+        haifuInfoFileNamesLoad();
+
+        // load
+        foreach (string haifuInfoFileName in haifuInfoFileNames)
         {
             SavedHaifuInfoLoad(haifuInfoFileName);
         }

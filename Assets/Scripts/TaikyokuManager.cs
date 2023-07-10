@@ -1099,9 +1099,10 @@ public class TaikyokuManager : MonoBehaviour
     // tehaiIds[turnPlayerId]の情報をImageに反映
     private void ShowTehai()
     {
-        MakeTehaiShift(turnPlayerId);
+        MakeTehaiShift(turnPlayerId);  // tehaiを配牌から遡って再構成
+        SortAllTehai(); // sort
 
-        for(int i = 0; i < tehaiIds[turnPlayerId].Count; i++)
+        for (int i = 0; i < tehaiIds[turnPlayerId].Count; i++)
         {
             ShowHai2Tehai(i, tehaiIds[turnPlayerId][i]);
         }
@@ -1146,28 +1147,41 @@ public class TaikyokuManager : MonoBehaviour
     }
 
     // 0を後ろに回したソート
+    // using red-stone, if hainum is 10, 20 or 30, this turns num into 5.5, 15.5 or 25.5
+    // so this sort tehai on float
     private void SortAllTehai()
     {
         int pos = 0;
         int delete = 0;
-        List<int> tmp_tehai;
+        List<float> tmp_tehai;
         for(int i = 0; i < 4; i++)
         {
             pos = 0;
             delete = 0;
-            tmp_tehai = new List<int>(tehaiIds[i]);
+            tmp_tehai = new List<float>();
+            foreach(int int_tehai_num in tehaiIds[i])
+            {
+                if (int_tehai_num == 10 | int_tehai_num == 20 | int_tehai_num == 30)
+                {
+                    tmp_tehai.Add((float)int_tehai_num - (float)4.5);
+                }
+                else
+                {
+                    tmp_tehai.Add((float)int_tehai_num);
+                }
+            }
             tmp_tehai.Sort();
             for (int j = 0; j < tmp_tehai.Count; j++)
             {
-                int tId = tmp_tehai[j];
+                float tId = tmp_tehai[j];
                 if (tId == 0)
                 {
                     delete++;
                 }
                 else
                 {
-                    print("tehailength : " + tmp_tehai.Count.ToString());
-                    print("pos : " + pos.ToString());
+                    //print("tehailength : " + tmp_tehai.Count.ToString());
+                    //print("pos : " + pos.ToString());
                     
                     tmp_tehai[pos] = tId;
                     pos++;
@@ -1177,7 +1191,21 @@ public class TaikyokuManager : MonoBehaviour
             {
                 tmp_tehai[k] = 0;
             }
-            tehaiIds[i] = new List<int>(tmp_tehai);
+            List<int> tmp_tehai2 = new List<int>();
+            foreach(float float_hai_num in tmp_tehai)
+            {
+                if (float_hai_num%1 != 0)
+                {
+                    tmp_tehai2.Add((int)(float_hai_num + 4.5));
+                }
+                else
+                {
+                    tmp_tehai2.Add((int)float_hai_num);
+                }
+            }
+
+
+            tehaiIds[i] = new List<int>(tmp_tehai2);
         }
         
 
