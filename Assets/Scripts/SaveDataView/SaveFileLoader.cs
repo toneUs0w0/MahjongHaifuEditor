@@ -16,7 +16,7 @@ public class SaveFileLoader : MonoBehaviour
     {
         logMessager = new LogMessager();
         haifuInfoList = new List<HaifuInfo>();
-        haifuInfoFileNames = new List<string>(){"info0001", "info0002"};
+        haifuInfoFileNames = new List<string>();
     }
 
     // import info file names from Datas/savedFileNames
@@ -28,6 +28,10 @@ public class SaveFileLoader : MonoBehaviour
         string[] haifuinfo_filename_list = info_file_names_textf_st.Split("\n");
         foreach(string filenam in haifuinfo_filename_list)
         {
+            if (filenam == "")
+            {
+                continue;
+            }
             haifuInfoFileNames.Add(filenam);
         }
 
@@ -50,6 +54,7 @@ public class SaveFileLoader : MonoBehaviour
 
     private void SavedHaifuInfoLoad(string HaifuInfoFileName)
     {
+        print(HaifuInfoFileName);
         HaifuInfo haifuInfo = new HaifuInfo();
 
         var _saved_haifu_info = Resources.Load<TextAsset>(SAVED_HAIFU_INFO_DIR + HaifuInfoFileName) as TextAsset;
