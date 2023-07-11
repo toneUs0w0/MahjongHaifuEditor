@@ -46,6 +46,7 @@ public class SettingPopManager : MonoBehaviour
     {
         // 牌譜データを削除
         // タイトルに戻る
+        SetBlocker(false);
         systemManager.TaikyokuView2Title();
     }
 

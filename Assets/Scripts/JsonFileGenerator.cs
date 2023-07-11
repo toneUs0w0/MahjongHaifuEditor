@@ -37,7 +37,7 @@ public class JsonFileGenerator
         string haifu_info_conts = CreateHaifuInfoContent(haifu, file_num);
         File.WriteAllText(SAVE_DATA_PATH + file_num + ".txt", HAIFU_URL);      // haifu file
         File.WriteAllText(SAVE_DATA_INFO_PATH + file_num + ".txt", haifu_info_conts);  // info file
-        File.AppendAllText(SAVED_INFO_FILE_NAMES_LIST_TEXT, file_num+"\n");
+        File.AppendAllText(SAVED_INFO_FILE_NAMES_LIST_TEXT, file_num+"テスト中\n");
 
 
     }
